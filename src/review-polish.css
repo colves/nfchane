@@ -27,3 +27,7 @@
   .fixed-material>strong{font-size:12px}
   .catalog-shared-specs{font-size:11px;margin:0 0 20px}
 }
+
+/* Cart photos use the selected card artwork, without cropping or stretching. */
+.cart-thumb.cart-product-photo{width:80px;height:80px;aspect-ratio:1;overflow:hidden;background:var(--surface)}
+.cart-product-photo>.google-product-image{display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit}

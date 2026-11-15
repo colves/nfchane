@@ -1,6 +1,6 @@
 # NFCHane
 
-NFC ve QR kartları için Türkçe, mobil uyumlu **tasarım ve arayüz geliştirme önizlemesi**. Bu sürümde ticari işlem, sipariş veya ödeme alınmaz. GitHub Pages yayını yalnız tasarım çalışmasının incelenmesi içindir; canlı mağaza uygun başka bir altyapıya taşınmalıdır.
+NFC ve QR kartları için Türkçe, mobil uyumlu **tasarım ve arayüz geliştirme önizlemesi**. Bu sürümde ticari işlem, sipariş veya ödeme alınmaz. Güncel yayın https://nfchane.colves.workers.dev/ adresindedir. Eski https://colves.github.io/nfcshop/ yönlendirmesi basılı QR bağlantıları için korunmalıdır.
 
 ## Çalıştırma
 
@@ -19,7 +19,13 @@ npm run build
 npm run build:pages
 ```
 
-`build` çıktısı `dist/`, `build:pages` yayın kopyası `docs/` klasöründedir. GitHub Pages kaynağı **main /docs** olarak ayarlanır. Göreli dosya yolları `/nfchane/` gibi alt dizinleri destekler. Derleme çıktıları elle düzenlenmez.
+`build` çıktısı `dist/` klasöründedir; Cloudflare GitHub `main` dalından derleyip bu çıktıyı yayımlar. Eski `build:pages` komutu yalnız arşiv önizlemesi içindir; eski QR yönlendirmesinin üzerine bu çıktıyı yayımlamayın. Göreli dosya yolları alt dizinleri de destekler. Derleme çıktıları elle düzenlenmez.
+
+## Supabase başlangıç bağlantısı
+
+Ürün kataloğu yayın hazırlanırken Supabase'ten okunur; ziyaretçi başına veritabanı isteği yoktur. `.env.example` dosyasındaki iki genel bağlantı ayarını yerelde `.env.local`, Cloudflare'da Builds değişkenleri olarak tanımlayın. Gizli veya service-role anahtarı kullanmayın. Ayarlar yoksa paketli katalog kullanılır; ayarlar mevcutken geçersiz yanıt yeni yayını engeller. Ürün metni değişiklikleri yeniden derlemede görünür. Satın alma ve fiyat gösterimi kapalı kalır.
+
+Sipariş/kişisel bilgi tabloları tarayıcıya kapalı özel şemadadır. Üyelikli ve misafir siparişleri için veri temeli hazırdır; sipariş kabulü, yönetim paneli ve ödeme henüz uygulanmamıştır. Şema, erişim kuralları ve sonraki aşamalar: [Supabase altyapısı](docs/SUPABASE-ALTYAPI.md).
 
 ## Hazır olanlar
 - Yedi ürün, kategori filtreleri ve her ürün için ayrı HTML adresi (`urun/google-yorum-karti/`). Eski ürün hash bağlantıları yeni sayfaya yönlenir.

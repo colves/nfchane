@@ -1,3 +1,6 @@
+import catalogSnapshot from './catalog-snapshot.json' with { type: 'json' };
+import { applyCatalogSnapshot } from './catalog-bridge.js';
+
 export const products = [
   { id: 'google', name: 'Google Yorum Kartı', category: 'yorum', label: 'Google', headline: 'Deneyiminizi paylaşın.', subtitle: 'Yorum bırakmak bir dokunuş uzakta.', description: 'Müşterilerinizi işletmenizin Google yorum sayfasına ulaştırın.', tone: 'google', price: null, symbol: 'G' },
   { id: 'instagram', name: 'Instagram Kartı', category: 'sosyal', label: 'Instagram', headline: 'Bizi takip edin.', subtitle: 'Yeni paylaşımlarımızda buluşalım.', description: 'İşletmenizin Instagram profilini kolayca paylaşın.', tone: 'instagram', price: null, symbol: 'instagram' },
@@ -7,6 +10,7 @@ export const products = [
   { id: 'iban', name: 'IBAN Paylaşım Kartı', category: 'isletme', label: 'IBAN', headline: 'Hesap bilgilerimiz.', subtitle: 'Bilgilere kolayca ulaşın.', description: 'Hesap adı ve IBAN bilginizi gösteren sayfaya erişim sağlayın.', tone: 'iban', price: null, symbol: 'bank' },
   { id: 'ilan', name: 'İlan Bağlantısı Kartı', category: 'isletme', label: 'İlanlar', headline: 'İlanlarımızı inceleyin.', subtitle: 'Detaylar bir dokunuş uzakta.', description: 'İlanınızı veya mağaza sayfanızı tek bağlantıyla paylaşın.', tone: 'ilan', price: null, symbol: 'home' },
 ];
+applyCatalogSnapshot(products, catalogSnapshot);
 export const connectionLabels = { hybrid: 'QR + NFC', nfc: 'Yalnız NFC', qr: 'Yalnız QR' };
 export const linkLabels = { static: 'Sabit bağlantı', dynamic: 'Değiştirilebilir bağlantı' };
 export function connectionNote(connection, linkType) {

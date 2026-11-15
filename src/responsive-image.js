@@ -1,5 +1,6 @@
 const widths = [160, 320, 640, 960];
 const imageSizes = {
+  cart: '80px',
   hero: '(max-width: 600px) calc(100vw - 60px), (max-width: 1200px) 44vw, 700px',
   catalog: '(max-width: 600px) calc((100vw - 50px) / 2), (max-width: 820px) 44vw, (max-width: 1600px) 30vw, 600px',
   detail: '(max-width: 700px) calc(100vw - 76px), (max-width: 1100px) 40vw, 460px',

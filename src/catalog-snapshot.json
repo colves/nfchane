@@ -1,0 +1,79 @@
+[
+  {
+    "id": "google",
+    "name": "Google Yorum Kartı",
+    "description": "Müşterilerinizi işletmenizin Google yorum sayfasına ulaştırın.",
+    "label": "Google",
+    "headline": "Deneyiminizi paylaşın.",
+    "subtitle": "Yorum bırakmak bir dokunuş uzakta.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "instagram",
+    "name": "Instagram Kartı",
+    "description": "İşletmenizin Instagram profilini kolayca paylaşın.",
+    "label": "Instagram",
+    "headline": "Bizi takip edin.",
+    "subtitle": "Yeni paylaşımlarımızda buluşalım.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "whatsapp",
+    "name": "WhatsApp Kartı",
+    "description": "Müşterilerinizin WhatsApp sohbetinize ulaşmasını kolaylaştırın.",
+    "label": "WhatsApp",
+    "headline": "Bir mesaj kadar yakın.",
+    "subtitle": "Sorularınız için bize yazın.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "menu",
+    "name": "Dijital Menü Kartı",
+    "description": "Hazır bağlantı, PDF veya size özel hazırlanan menünüzü paylaşın.",
+    "label": "Dijital menü",
+    "headline": "Menümüze göz atın.",
+    "subtitle": "Lezzetli bir başlangıç yapalım.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "web",
+    "name": "İnternet Sitesi Kartı",
+    "description": "Ziyaretçilerinizi doğrudan internet sitenizle buluşturun.",
+    "label": "Web sitesi",
+    "headline": "Bizi keşfedin.",
+    "subtitle": "İşletmemizle çevrim içi tanışın.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "iban",
+    "name": "IBAN Paylaşım Kartı",
+    "description": "Hesap adı ve IBAN bilginizi gösteren sayfaya erişim sağlayın.",
+    "label": "IBAN",
+    "headline": "Hesap bilgilerimiz.",
+    "subtitle": "Bilgilere kolayca ulaşın.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  },
+  {
+    "id": "ilan",
+    "name": "İlan Bağlantısı Kartı",
+    "description": "İlanınızı veya mağaza sayfanızı tek bağlantıyla paylaşın.",
+    "label": "İlanlar",
+    "headline": "İlanlarımızı inceleyin.",
+    "subtitle": "Detaylar bir dokunuş uzakta.",
+    "price_minor": null,
+    "currency": "TRY",
+    "is_purchasable": false
+  }
+]

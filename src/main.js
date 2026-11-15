@@ -1,5 +1,5 @@
 import { renderProductConfig, photoProductIds } from './product-config.js';
-import { renderCardMedia, productMark } from './product-media.js';
+import { renderCardMedia } from './product-media.js';
 import { renderCatalogCards } from './catalog.js';
 import { icon } from './icons.js';
 import '@fontsource-variable/manrope';
@@ -157,7 +157,7 @@ function renderCart() {
   }
   content.innerHTML = `<p class="cart-preview-note">Bu bir önizleme sepetidir; sipariş veya ödeme oluşturmaz.</p><div class="cart-items">${cart.map(item => {
     const p = products.find(p => p.id === item.productId);
-    return `<article class="cart-item"><div class="cart-thumb art-${p.tone}">${productMark(p)}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">Fiyat henüz girilmedi</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div></div></article>`;
+    return `<article class="cart-item"><div class="cart-thumb cart-product-photo">${cardMockup(p, { connection: item.connection, material: item.material, placement: 'cart' })}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">Fiyat henüz girilmedi</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div></div></article>`;
   }).join('')}</div><div class="cart-summary"><div><span>Ürün toplamı</span><strong>Fiyat henüz girilmedi</strong></div><div><span>Kargo</span><span>Henüz belirlenmedi</span></div><p>Fiyatlar, kargo ve toplu alım koşulları satış açılmadan önce açıklanacaktır.</p><button class="button disabled-purchase" disabled>Satın al · Satış henüz açık değil ${icon('shield')}</button></div><button class="button outline continue-shopping" data-close>Ürünleri incelemeye devam et</button>`;
   content.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => { cart = cart.filter(item => item.key !== button.dataset.remove); renderCart(); notify('Ürün sepetten kaldırıldı.'); }));
   content.querySelectorAll('[data-cart-quantity]').forEach(input => input.addEventListener('change', () => {
