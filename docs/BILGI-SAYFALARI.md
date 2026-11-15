@@ -15,7 +15,7 @@ Ana sayfa ve üretilen ürün sayfalarının alt menüsünde yardım merkezi, te
 
 İçerik: `src/info-pages.js`. Görünüm: `src/info.css`. HTML giriş noktası: `bilgi/index.html`. Vite geliştirme yönlendirmesi ve statik HTML üretimi ortak `scripts/info-html.mjs` kullanır. `npm run build` artık yedi bilgi alt sayfasını da üretir. Domain kökü ve `/nfcshop/` gibi depo önekleri için göreli bağlantılar korunur. JavaScript kapalıyken de içerik ve bağlantılar çalışır. Yeni servis veya bağımlılık eklenmedi.
 
-Bu çalışma yerel olarak hazırlandı ve test edildi; bu sohbetten commit, push veya canlı dağıtım yapılmadı. Diğer sohbetlerin eşzamanlı değişiklikleri topluca commit edilmemeli.
+İlk hazırlıkta çalışma yalnızca yerelde test edildi. Ardından 15 Kasım Supabase başlangıç entegrasyonuyla birlikte yardım sayfaları ve sepet görseli düzeltmesi GitHub main üzerinden Cloudflare'a yayımlandı. Diğer sohbetlerin eşzamanlı yerel çalışmaları korunarak ayrı yayın kopyası kullanıldı.
 
 ## Doğrulama
 

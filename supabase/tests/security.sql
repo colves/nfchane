@@ -48,11 +48,35 @@ begin
 end $$;
 reset role;
 
+-- A guest order can be represented without an Auth account, but is never persisted here.
+do $$
+declare test_order uuid;
+begin
+  insert into private.orders(request_key,customer_email,customer_name,customer_phone,shipping_address,subtotal_minor,shipping_minor,total_minor)
+    values(gen_random_uuid(),'preview-test@example.invalid','Preview Test','0000000000','{"recipient":"Preview Test","line1":"Test","city":"Test","district":"Test","country":"TR"}',100,0,100)
+    returning id into test_order;
+  if (select customer_user_id from private.orders where id = test_order) is not null then raise exception 'Guest unexpectedly requires an account'; end if;
+  insert into private.order_items(order_id,line_number,product_id,product_name,product_image_path,size_cm,connection_method,link_type,quantity,unit_price_minor,line_total_minor)
+    values(test_order,1,'google','Preview Test','images/test.webp',10,'nfc','static',1,100,100);
+  begin
+    update private.orders set shipping_address = shipping_address || '{"country":null}'::jsonb where id = test_order;
+    raise exception 'Null destination country accepted';
+  exception when check_violation then null; end;
+  begin
+    update private.orders set shipping_address = shipping_address || '{"country":"DE"}'::jsonb where id = test_order;
+    raise exception 'Non-TR destination accepted';
+  exception when check_violation then null; end;
+  begin
+    update private.order_items set link_type = 'dynamic' where order_id = test_order;
+    raise exception 'NFC-only dynamic QR option accepted';
+  exception when check_violation then null; end;
+end $$;
+
 -- Database guards enforce Turkish preview prices and valid card combinations.
 do $$
 begin
   begin update public.products set price_minor = -1 where id = 'google'; raise exception 'Negative price accepted'; exception when check_violation then null; end;
   begin update public.products set is_purchasable = true where id = 'google'; raise exception 'Sales opened'; exception when check_violation then null; end;
 end $$;
-select 'PASS: RLS, hidden catalog, denied writes, denied order reads, denied privilege escalation, preview guard' as security_checks;
+select 'PASS: RLS, denied writes/reads/escalation, hidden products, guest schema, TR address, NFC static, preview guard' as security_checks;
 rollback;

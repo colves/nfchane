@@ -52,9 +52,16 @@ En son kullanıcı kararı misafir siparişine izin verecek şekilde önceki üy
 `SUPABASE_URL` ve `SUPABASE_PUBLISHABLE_KEY` yalnız yerelde `.env.local`, Cloudflare'da Builds değişkenleridir. Publishable anahtar gizli değildir ve sadece RLS/grant yetkilerini kullanabilir; yine de bu uygulamada tarayıcı paketine veya depoya eklenmez. `sb_secret_`, legacy `service_role`, veritabanı parolası veya yönetim token'ı bu bağlantıda kullanılmaz. Senkronizasyon kodu publishable dışındaki anahtarları reddeder.
 
 - Migration: `supabase/migrations/202611150001_preview_foundation.sql`.
+- Ek adres kısıtı: `supabase/migrations/202611150002_shipping_country_guard.sql`; Türkiye ülke alanı JSON null/boş olamaz.
 - Seed üretimi: `node scripts/generate-supabase-seed.mjs`; çıktı `supabase/seed.sql`.
 - Gerçek veritabanı güvenlik testi: `supabase/tests/security.sql`; geçici değişiklikleri ROLLBACK ile geri alır.
 - Testler: anon/authenticated rolünde özel sipariş okuma ve katalog değiştirme reddi, gizli ürün filtresi, yönetici yetkisi yükseltme reddi, negatif fiyat ve satış açma engeli.
 - Tarayıcıya ulaşan dosyalarda, staged Git dosyalarında ve yayın günlüğünde gizli anahtar bulunmadığı ayrıca kontrol edilir.
+
+## Uygulama sonucu
+
+Her iki migration gerçek nfchane projesine uygulandı, yedi ürün kaydedildi. Güvenlik sorgusu anon/authenticated erişim reddini, gizli ürün filtresini, geçici misafir siparişini, Türkiye adres kısıtını ve NFC-only/static kuralını doğrular; test kayıtları ROLLBACK ile kalıcı bırakılmaz. HTTP üzerinden orders/order_items/admin_members erişimleri 404, private şema isteği 406 ile reddedildi. Genel katalog yedi ürünü, NULL fiyatları ve kapalı satın alma durumunu döndürdü.
+
+Yerel ve yayın kopyasında 26 test ve Supabase bağlantılı derleme geçti. Cloudflare Builds değişkenleri kaydedildi ve GitHub main dalına gönderilen ilk entegrasyon otomatik yayımlandı. Canlı Google ürün sayfası, NFC seçimi, doğru fotoğraflı sepet ve kapalı ödeme kontrol edildi. Yeni hesap veya sipariş alma arayüzü açılmadı.
 
 Kaynaklar: https://supabase.com/docs/guides/api/securing-your-api ; https://supabase.com/docs/guides/database/postgres/row-level-security ; https://supabase.com/docs/guides/getting-started/api-keys .
