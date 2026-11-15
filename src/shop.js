@@ -19,7 +19,7 @@ export function connectionNote(connection, linkType) {
   return 'Basılı QR kodunun hedefi sonradan değiştirilemez. Değişiklik ihtiyacınız varsa değiştirilebilir bağlantıyı seçin.';
 }
 export const menuLabels = { link: 'Hazır menü bağlantım var', pdf: 'Hazır PDF menüm var', 'design-pdf': 'PDF menü hazırlatmak istiyorum', 'design-web': 'Web menüsü hazırlatmak istiyorum' };
-export const sizeLabels = Object.fromEntries(Array.from({ length: 11 }, (_, i) => { const n = i + 5; return [`${n}x${n}`, `${n} × ${n} cm`]; }));
+export const sizeLabels = { '10x10': '10 × 10 cm' };
 export const materialLabels = { clear: 'Şeffaf pleksi' };
 export const whatsappNumber = '905511956312';
 export function contactUrl(message = '') {
@@ -43,7 +43,7 @@ export function restoreCart(value) {
   try {
     const records = JSON.parse(value);
     if (!Array.isArray(records) || records.length > 100) return [];
-    return records.reduce((cart, record) => record?.material === 'white' ? cart : addToCart(cart, makeSelection(record.productId, record)), []);
+    return records.reduce((cart, record) => record?.material === 'white' || (record?.size && record.size !== '10x10') ? cart : addToCart(cart, makeSelection(record.productId, record)), []);
   } catch { return []; }
 }
 export function addToCart(cart, selection) {

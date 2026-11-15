@@ -31,9 +31,9 @@ test('IBAN catalog and product presentation resolve to the same approved photo r
 });
 
 test('help handoff contains the current valid selection without sending anything',()=>{
-  const selection=makeSelection('google',{size:'12x12',quantity:7,connection:'nfc',linkType:'dynamic'});
+  const selection=makeSelection('google',{size:'10x10',quantity:7,connection:'nfc',linkType:'dynamic'});
   const description=describeSelection(selection);
-  for(const part of ['Google Yorum Kartı','12 × 12 cm','Şeffaf pleksi','3 mm','Yalnız NFC','Sabit bağlantı','7 adet']) assert.ok(description.includes(part));
+  for(const part of ['Google Yorum Kartı','10 × 10 cm','Şeffaf pleksi','3 mm','Yalnız NFC','Sabit bağlantı','7 adet']) assert.ok(description.includes(part));
   assert.ok(!description.includes('Değiştirilebilir'));
   const url=new URL(contactUrl(description));
   assert.equal(url.hostname,'wa.me');

@@ -16,13 +16,11 @@ test('only clear material can be selected and retired white cart lines are remov
   assert.throws(()=>makeSelection('google',{material:'wood'}));
 });
 
-test('sizes cover 5 through 15 cm and different sizes survive as distinct cart lines', () => {
-  assert.equal(Object.keys(sizeLabels).length,11);
-  for(let n=5;n<=15;n++) assert.equal(makeSelection('iban',{size:`${n}x${n}`}).size,`${n}x${n}`);
-  let cart=addToCart([],makeSelection('iban',{size:'5x5',quantity:2}));
-  cart=addToCart(cart,makeSelection('iban',{size:'15x15',quantity:3}));
-  assert.equal(restoreCart(JSON.stringify(cart)).length,2);
-  for(const size of ['4x4','16x16','5x15']) assert.throws(()=>makeSelection('iban',{size}));
+test('all cards are fixed at 10 cm and retired sizes cannot be ordered', () => {
+  assert.deepEqual(sizeLabels,{'10x10':'10 × 10 cm'});
+  const cart=addToCart([],makeSelection('iban',{quantity:2}));
+  for(const size of ['5x5','12x12','15x15','5x15']) assert.throws(()=>makeSelection('iban',{size}));
+  assert.deepEqual(restoreCart(JSON.stringify([...cart,{...cart[0],size:'12x12'}])),cart);
 });
 
 test('each static product page is directly addressable, unique and has working nested assets', async () => {

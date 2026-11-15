@@ -11,6 +11,10 @@ export default defineConfig({
     main: fileURLToPath(new URL('./index.html', import.meta.url)),
     account: fileURLToPath(new URL('./ornek/iban/index.html', import.meta.url)),
     info: fileURLToPath(new URL('./bilgi/index.html', import.meta.url)),
+    admin: fileURLToPath(new URL('./yonetim/index.html', import.meta.url)),
+    order: fileURLToPath(new URL('./siparis/index.html', import.meta.url)),
+    tracking: fileURLToPath(new URL('./siparis-takibi/index.html', import.meta.url)),
+    customer: fileURLToPath(new URL('./hesabim/index.html', import.meta.url)),
   } } },
   plugins: [{ name: 'home-html', transformIndexHtml: { order: 'pre', handler: html => html.includes('<!--info-content-->') ? infoHtml(html) : renderHome(html) } }, { name: 'product-pages-dev', configureServer(server) {
     server.middlewares.use(async (req, res, next) => {
