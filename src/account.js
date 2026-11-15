@@ -9,6 +9,7 @@ function tab(name){
   document.querySelector('.account-tabs').hidden=name==='recovery';
 }
 tab('login');
+if(location.hash==='#giris-hatasi'){message(notice,'Giriş bağlantısı geçersiz veya süresi dolmuş. Bağlantıyı istediğiniz tarayıcıda yeniden deneyin.',true);history.replaceState(null,'',location.pathname+location.search);}
 for(const value of ['login','signup'])document.querySelector(`#${value}-tab`).addEventListener('click',()=>tab(value));
 document.querySelector('.account-tabs').addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const value=event.key==='Home'?'login':event.key==='End'?'signup':document.querySelector('#login-tab').getAttribute('aria-selected')==='true'?'signup':'login';tab(value);document.querySelector(`#${value}-tab`).focus();}});
 document.querySelector('#show-recovery').addEventListener('click',()=>tab('recovery'));

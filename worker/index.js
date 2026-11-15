@@ -84,7 +84,7 @@ export async function handleApi(request,env,fetcher=fetch){
       const session=await identitySession(request,env,fetcher);const response=json(await rpc(env,session.token,'customer_orders',{},fetcher));if(session.renewed)sessionCookies(response,session.renewed);return response;
     }
     if(path==='/api/customer/password'&&request.method==='PATCH'){
-      const session=await identitySession(request,env,fetcher),data=await body(request);await upstream(env,'/auth/v1/user',{token:session.token,method:'PUT',data:{password:password(data.password)}},fetcher);return json({ok:true});
+      const session=await identitySession(request,env,fetcher),data=await body(request);await upstream(env,'/auth/v1/user',{token:session.token,method:'PUT',data:{password:password(data.password)}},fetcher);const response=json({ok:true});if(session.renewed)sessionCookies(response,session.renewed);return response;
     }
     if(path==='/api/auth/start'&&request.method==='POST'){
       const data=await body(request);const address=email(data.email);const verifier=randomToken();
@@ -136,7 +136,11 @@ export async function handleApi(request,env,fetcher=fetch){
     }else throw new ApiError(404,'İşlem bulunamadı.');
     if(session.renewed)sessionCookies(response,session.renewed);return response;
   }catch(error){
-    if(path==='/api/auth/callback')return clearCookies(new Response(null,{status:303,headers:{...security,Location:(env.APP_ORIGIN||url.origin)+'/yonetim/#giris-hatasi'}}));
+    if(path==='/api/auth/callback'){
+      let flow;try{flow=cookies(request)[names.flow];}catch{}
+      const destination=['customer','recovery'].includes(flow)?'/hesabim/':'/yonetim/';
+      return clearCookies(new Response(null,{status:303,headers:{...security,Location:(env.APP_ORIGIN||url.origin)+destination+'#giris-hatasi'}}));
+    }
     return json({error:error instanceof InputError?error.message:error instanceof ApiError?error.message:'İşlem tamamlanamadı. Daha sonra tekrar deneyin.'},error instanceof InputError?400:error instanceof ApiError?error.status:503);
   }
 }

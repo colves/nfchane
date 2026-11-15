@@ -39,3 +39,18 @@ test('verified customer sessions do not receive administrator privileges',async(
   const session=await handleApi(request('/api/customer/session',{cookie:'__Host-nfchane_access=valid'}),env,fetcher);assert.equal(session.status,200);assert.equal((await session.json()).authenticated,true);
   const admin=await handleApi(request('/api/admin/orders',{cookie:'__Host-nfchane_access=valid'}),env,fetcher);assert.equal(admin.status,403);
 });
+test('expired customer callbacks return to the account screen without retaining authentication cookies',async()=>{
+  for(const flow of ['customer','recovery','admin']){
+    const response=await handleApi(request('/api/auth/callback',{cookie:`__Host-nfchane_flow=${flow}`}),env);
+    assert.equal(response.status,303);
+    assert.equal(response.headers.get('Location'),env.APP_ORIGIN+(flow==='admin'?'/yonetim/':'/hesabim/')+'#giris-hatasi');
+    assert.match(response.headers.get('Set-Cookie'),/Max-Age=0/);
+  }
+});
+test('password updates preserve a refreshed secure session',async()=>{
+  const fetcher=async url=>new Response(JSON.stringify(url.includes('grant_type=refresh_token')?{access_token:'renewed-access',refresh_token:'renewed-refresh',expires_in:3600}:{id:'customer-id',email:'test@example.invalid',email_confirmed_at:'2026-01-01'}));
+  const response=await handleApi(request('/api/customer/password',{method:'PATCH',cookie:'__Host-nfchane_refresh=old-refresh',data:{password:'a-valid-long-password'}}),{...env,CUSTOMER_AUTH_ENABLED:'true'},fetcher);
+  assert.equal(response.status,200);
+  assert.match(response.headers.get('Set-Cookie')||'',/__Host-nfchane_access=renewed-access/);
+  assert.match(response.headers.get('Set-Cookie')||'',/HttpOnly/);
+});
