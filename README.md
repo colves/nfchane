@@ -1,4 +1,4 @@
-# NFCShop
+# NFCHane
 
 NFC ve QR kartları için Türkçe, mobil uyumlu **tasarım ve arayüz geliştirme önizlemesi**. Bu sürümde ticari işlem, sipariş veya ödeme alınmaz. GitHub Pages yayını yalnız tasarım çalışmasının incelenmesi içindir; canlı mağaza uygun başka bir altyapıya taşınmalıdır.
 
@@ -19,7 +19,7 @@ npm run build
 npm run build:pages
 ```
 
-`build` çıktısı `dist/`, `build:pages` yayın kopyası `docs/` klasöründedir. GitHub Pages kaynağı **main /docs** olarak ayarlanır. Göreli dosya yolları `/nfcshop/` gibi alt dizinleri destekler. Derleme çıktıları elle düzenlenmez.
+`build` çıktısı `dist/`, `build:pages` yayın kopyası `docs/` klasöründedir. GitHub Pages kaynağı **main /docs** olarak ayarlanır. Göreli dosya yolları `/nfchane/` gibi alt dizinleri destekler. Derleme çıktıları elle düzenlenmez.
 
 ## Hazır olanlar
 - Yedi ürün, kategori filtreleri ve her ürün için ayrı HTML adresi (`urun/google-yorum-karti/`). Eski ürün hash bağlantıları yeni sayfaya yönlenir.
