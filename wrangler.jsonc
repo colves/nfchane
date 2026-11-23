@@ -3,7 +3,10 @@
   "main": "worker/index.js",
   "compatibility_date": "2026-11-15",
   "keep_vars": true,
-  "vars": {"APP_ORIGIN":"https://nfchane.colves.workers.dev","CUSTOMER_AUTH_ENABLED":"false"},
+  "workers_dev": true,
+  "routes": [{"pattern":"nfchane.com","custom_domain":true}],
+  "ratelimits": [{"name":"ADMIN_LOGIN_LIMITER","namespace_id":"2626112301","simple":{"limit":1,"period":60}}],
+  "vars": {"APP_ORIGIN":"https://nfchane.com","LEGACY_APP_ORIGIN":"https://nfchane.colves.workers.dev","CUSTOMER_AUTH_ENABLED":"false"},
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

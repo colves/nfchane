@@ -6,6 +6,7 @@ import { productHtml } from './scripts/product-html.mjs';
 import { renderHome } from './scripts/render-home.mjs';
 import { infoPageFromPath } from './src/info-pages.js';
 import { infoHtml } from './scripts/info-html.mjs';
+import {canonicalHtml} from './scripts/site-meta.mjs';
 export default defineConfig({
   build: { rollupOptions: { input: {
     main: fileURLToPath(new URL('./index.html', import.meta.url)),
@@ -16,7 +17,7 @@ export default defineConfig({
     tracking: fileURLToPath(new URL('./siparis-takibi/index.html', import.meta.url)),
     customer: fileURLToPath(new URL('./hesabim/index.html', import.meta.url)),
   } } },
-  plugins: [{ name: 'home-html', transformIndexHtml: { order: 'pre', handler: html => html.includes('<!--info-content-->') ? infoHtml(html) : renderHome(html) } }, { name: 'product-pages-dev', configureServer(server) {
+  plugins: [{ name: 'home-html', transformIndexHtml: { order: 'pre', handler: (html,context) => canonicalHtml(html.includes('<!--info-content-->') ? infoHtml(html) : renderHome(html),context.path) } }, { name: 'product-pages-dev', configureServer(server) {
     server.middlewares.use(async (req, res, next) => {
       const pathname = new URL(req.url, 'http://localhost').pathname;
       const infoSlug = infoPageFromPath(pathname);

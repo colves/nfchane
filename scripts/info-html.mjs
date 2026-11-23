@@ -1,4 +1,5 @@
 import { infoPages, renderInfoContent } from '../src/info-pages.js';
+import {canonicalHtml} from './site-meta.mjs';
 
 export function infoHtml(template, slug = 'index') {
   const title = slug === 'index' ? 'Yardım ve bilgi' : infoPages[slug]?.title;
@@ -11,5 +12,5 @@ export function infoHtml(template, slug = 'index') {
     // Article links point to sibling information pages, rather than the store root.
     .replace('class="info-breadcrumb" aria-label="Sayfa yolu"><a href="../../"', 'class="info-breadcrumb" aria-label="Sayfa yolu"><a href="../"')
     .replace('href="../../iletisim/"', 'href="../iletisim/"');
-  return html;
+  return canonicalHtml(html,slug==='index'?'/bilgi/':`/bilgi/${slug}/`);
 }

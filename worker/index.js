@@ -51,6 +51,7 @@ async function identitySession(request,env,fetcher){
 }
 async function adminSession(request,env,fetcher){const session=await identitySession(request,env,fetcher);return {...session,user:await rpc(env,session.token,'admin_session',{},fetcher)};}
 function password(value){if(typeof value!=='string'||value.length<12||value.length>128||value.includes('\0'))throw new InputError('Parola 12–128 karakter olmalı.');return value;}
+const authOrigin=(url,env)=>url.origin===env.LEGACY_APP_ORIGIN?url.origin:(env.APP_ORIGIN||url.origin);
 const nextPath=value=>value==='/siparis/'?'/siparis/':'/hesabim/';
 
 export async function handleApi(request,env,fetcher=fetch){
@@ -61,14 +62,14 @@ export async function handleApi(request,env,fetcher=fetch){
     if(!['GET','POST','PATCH'].includes(request.method))throw new ApiError(405,'Bu istek yöntemi desteklenmiyor.');
     // Neither an accidental environment flag nor client-supplied totals can open checkout.
     if(path==='/api/orders'||path==='/api/payments')throw new ApiError(423,'Satış ve ödeme kapalı. Gerçek sipariş kabul edilmiyor.');
-    if(request.method!=='GET'&&request.headers.get('Origin')!==(env.APP_ORIGIN||url.origin))throw new ApiError(403,'İstek kaynağı doğrulanamadı.');
+    if(request.method!=='GET'&&request.headers.get('Origin')!==authOrigin(url,env))throw new ApiError(403,'İstek kaynağı doğrulanamadı.');
     if(!configured(env))throw new ApiError(503,'Yönetim bağlantısı hazırlanıyor.');
     if(path.startsWith('/api/customer/')&&!['/api/customer/session','/api/customer/orders','/api/customer/status'].includes(path)&&env.CUSTOMER_AUTH_ENABLED!=='true')throw new ApiError(423,'Müşteri üyeliği e-posta gönderim hizmeti tamamlandıktan sonra açılacak. Misafir olarak formu inceleyebilirsiniz.');
     if(['/api/customer/signup','/api/customer/recovery'].includes(path)&&request.method==='POST'){
       const data=await body(request),address=email(data.email),verifier=randomToken(),isRecovery=path.endsWith('/recovery');
       const challenge=b64(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(verifier))));
       const values={email:address,code_challenge:challenge,code_challenge_method:'s256',...(isRecovery?{}:{password:password(data.password),data:{full_name:text(data.name,'Ad soyad',150)}})};
-      await upstream(env,`/auth/v1/${isRecovery?'recover':'signup'}?redirect_to=${encodeURIComponent((env.APP_ORIGIN||url.origin)+'/api/auth/callback')}`,{method:'POST',data:values},fetcher);
+      await upstream(env,`/auth/v1/${isRecovery?'recover':'signup'}?redirect_to=${encodeURIComponent(authOrigin(url,env)+'/api/auth/callback')}`,{method:'POST',data:values},fetcher);
       const response=json({message:isRecovery?'Adres kayıtlıysa şifre yenileme bağlantısı gönderildi.':'Kayıt isteği alındı. E-posta doğrulama bağlantısını aynı tarayıcıda açın.'});
       response.headers.append('Set-Cookie',cookie(names.verifier,verifier,600));response.headers.append('Set-Cookie',cookie(names.flow,isRecovery?'recovery':'customer',600));response.headers.append('Set-Cookie',cookie(names.next,nextPath(data.returnTo),600));return response;
     }
@@ -88,8 +89,9 @@ export async function handleApi(request,env,fetcher=fetch){
     }
     if(path==='/api/auth/start'&&request.method==='POST'){
       const data=await body(request);const address=email(data.email);const verifier=randomToken();
+      if(env.ADMIN_LOGIN_LIMITER){const {success}=await env.ADMIN_LOGIN_LIMITER.limit({key:'admin-email:'+await tokenHash(address)});if(!success)throw new ApiError(429,'Yeni giriş bağlantısı istemeden önce en az 60 saniye bekleyin.');}
       const challenge=b64(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(verifier))));
-      if(address===env.ADMIN_LOGIN_EMAIL.toLowerCase())await upstream(env,`/auth/v1/otp?redirect_to=${encodeURIComponent((env.APP_ORIGIN||url.origin)+'/api/auth/callback')}`,{method:'POST',data:{email:address,create_user:true,code_challenge:challenge,code_challenge_method:'s256'}},fetcher);
+      if(address===env.ADMIN_LOGIN_EMAIL.toLowerCase())await upstream(env,`/auth/v1/otp?redirect_to=${encodeURIComponent(authOrigin(url,env)+'/api/auth/callback')}`,{method:'POST',data:{email:address,create_user:false,code_challenge:challenge,code_challenge_method:'s256'}},fetcher);
       const response=json({message:'Adres yetkiliyse giriş bağlantısı gönderildi. Bağlantıyı aynı tarayıcıda açın.'});
       response.headers.append('Set-Cookie',cookie(names.verifier,verifier,600));response.headers.append('Set-Cookie',cookie(names.flow,'admin',600));return response;
     }
@@ -101,7 +103,7 @@ export async function handleApi(request,env,fetcher=fetch){
       if(flow==='admin')await rpc(env,data.access_token,'admin_session',{},fetcher);
       else {if(env.CUSTOMER_AUTH_ENABLED!=='true')throw new ApiError(423,'Müşteri üyeliği kapalı.');const user=await upstream(env,'/auth/v1/user',{token:data.access_token},fetcher);if(!user?.email_confirmed_at)throw new ApiError(403,'E-posta doğrulanmadı.');}
       const destination=flow==='admin'?'/yonetim/':flow==='recovery'?'/hesabim/#sifre-yenile':nextPath(cookies(request)[names.next]);
-      const response=new Response(null,{status:303,headers:{...security,Location:(env.APP_ORIGIN||url.origin)+destination}});
+      const response=new Response(null,{status:303,headers:{...security,Location:authOrigin(url,env)+destination}});
       sessionCookies(response,data);for(const name of [names.verifier,names.flow,names.next])response.headers.append('Set-Cookie',cookie(name,'',0));return response;
     }
     if(path==='/api/auth/logout'&&request.method==='POST'){
@@ -139,7 +141,7 @@ export async function handleApi(request,env,fetcher=fetch){
     if(path==='/api/auth/callback'){
       let flow;try{flow=cookies(request)[names.flow];}catch{}
       const destination=['customer','recovery'].includes(flow)?'/hesabim/':'/yonetim/';
-      return clearCookies(new Response(null,{status:303,headers:{...security,Location:(env.APP_ORIGIN||url.origin)+destination+'#giris-hatasi'}}));
+      return clearCookies(new Response(null,{status:303,headers:{...security,Location:authOrigin(url,env)+destination+'#giris-hatasi'}}));
     }
     return json({error:error instanceof InputError?error.message:error instanceof ApiError?error.message:'İşlem tamamlanamadı. Daha sonra tekrar deneyin.'},error instanceof InputError?400:error instanceof ApiError?error.status:503);
   }

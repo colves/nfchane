@@ -1,11 +1,13 @@
 import { products } from '../src/shop.js';
 import { renderProductPage, productPages } from '../src/product-pages.js';
+import {canonicalHtml} from './site-meta.mjs';
+const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 export function productHtml(template, id) {
   const p = products.find(p => p.id === id);
-  return template.replace(/\r\n/g, '\n').replace(/<title>[^<]*<\/title>/, `<title>${p.name} — NFCHane Önizleme</title>`)
-    .replace(/<meta name="description" content="[^"]*"\s*\/>/, `<meta name="description" content="${p.description} Boyut, pleksi ve bağlantı seçeneklerini inceleyin. Satış henüz açık değildir." />`)
-    .replace(/<main id="main">[\s\S]*?<\/main>/, `<main id="main">${renderProductPage(id)}</main>`)
+  return canonicalHtml(template,`/urun/${productPages[id].slug}/`).replace(/\r\n/g, '\n').replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(p.name)} — NFCHane Önizleme</title>`)
+    .replace(/<meta name="description" content="[^"]*"\s*\/>/, () => `<meta name="description" content="${escapeHtml(p.description)} Boyut, pleksi ve bağlantı seçeneklerini inceleyin. Satış henüz açık değildir." />`)
+    .replace(/<main id="main">[\s\S]*?<\/main>/, () => `<main id="main">${renderProductPage(id)}</main>`)
     .replace(/<dialog id="product-dialog"[\s\S]*?<\/dialog>/, '')
     .replaceAll('href="#', 'href="../../#')
     .replaceAll('href="../../#secim"', 'href="#secim"')

@@ -21,6 +21,7 @@ test('magic-link flow stores PKCE in secure HttpOnly cookies and does not disclo
   let sent;const fetcher=async(url,options)=>{sent={url,body:JSON.parse(options.body)};return new Response('{}',{status:200});};
   const response=await handleApi(request('/api/auth/start',{method:'POST',data:{email:env.ADMIN_LOGIN_EMAIL}}),env,fetcher);
   assert.equal(response.status,200);assert.equal(sent.body.code_challenge_method,'s256');assert.equal(sent.body.code_challenge.length,43);
+  assert.equal(sent.body.create_user,false);
   const header=response.headers.get('Set-Cookie');for(const piece of ['HttpOnly','Secure','SameSite=Lax','Path=/','Max-Age=600'])assert.ok(header.includes(piece));
   assert.doesNotMatch(await response.text(),/access_token|refresh_token|code_verifier/);
 });
