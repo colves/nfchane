@@ -15,6 +15,7 @@ import { animateFeedback, revealFeedback } from './interaction-feedback.js';
 import { googleCardImage } from './google-card-assets.js';
 import { productPages, productPath, productIdFromPath } from './product-pages.js';
 import { products, makeSelection, addToCart, changeQuantity, requiresQuote, connectionLabels, linkLabels, menuLabels, connectionNote, sizeLabels, materialLabels, contactUrl, restoreCart, describeSelection } from './shop.js';
+import { emitPreviewEvent } from './storefront-events.js';
 
 // Browsers can inherit a bare fragment from an old QR URL after a redirect.
 if (location.hash === '' && location.href.endsWith('#')) {
@@ -133,6 +134,7 @@ function openProduct(id, updateHash = true) {
       document.querySelector('#cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
       document.querySelector('#selection-error').textContent = '';
       renderCart();
+      emitPreviewEvent('cart_add', p.id, selection);
       showDialog('cart-dialog');
       notify('Seçiminiz önizleme sepetine eklendi.');
     } catch (error) { document.querySelector('#selection-error').textContent = error.message; }
@@ -187,7 +189,10 @@ document.querySelectorAll('[data-demo-target]').forEach(button => button.addEven
   document.querySelector('#demo-destination').innerHTML = `${icon(target[0])}<span>${target[1]}<br><strong>${target[2]}</strong></span>`;
   document.querySelectorAll('[data-demo-target]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
 }));
-} else { openProduct(pageProduct, false); }
+} else {
+  openProduct(pageProduct, false);
+  emitPreviewEvent('product_view', pageProduct);
+}
 document.querySelector('#year').textContent = new Date().getFullYear();
 renderCart();
 
@@ -240,7 +245,7 @@ document.querySelectorAll('details').forEach(details => details.addEventListener
 function routeProduct() {
   if (!pageProduct && location.hash.startsWith('#urun/')) {
     const id = location.hash.slice(6);
-    if (products.some(p => p.id === id)) location.replace(productPath(id));
+    if (products.some(p => p.id === id)) location.replace(productPath(id) + location.search);
   }
 }
 window.addEventListener('hashchange', routeProduct);

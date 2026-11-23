@@ -11,6 +11,7 @@ export function productHtml(template, id) {
     .replace(/<dialog id="product-dialog"[\s\S]*?<\/dialog>/, '')
     .replaceAll('href="#', 'href="../../#')
     .replaceAll('href="../../#secim"', 'href="#secim"')
+    .replaceAll('href="../../#product-title"', 'href="#product-title"')
     .replaceAll('href="../../#main"', 'href="#main"')
     .replaceAll('href="./', 'href="../../')
     .replaceAll('src="./', 'src="../../')

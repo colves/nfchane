@@ -36,7 +36,7 @@ test('each static product page is directly addressable, unique and has working n
     assert.ok(html.includes(`<title>${p.name}`));
     assert.ok(html.includes('src="../../src/main.js"'));
     assert.ok(html.includes('href="#main"'));
-    assert.ok(html.includes('href="#secim"'));
+    assert.ok(html.includes(p.id === 'google' ? 'href="#product-title"' : 'href="#secim"'));
     assert.ok(html.includes('noindex,nofollow'));
     assert.ok(!html.includes('id="hero-title"'));
     const realAssetPath = new URL('../../src/main.js',`https://colves.github.io${path}`).pathname;
