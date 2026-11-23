@@ -1,10 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {handleApi} from '../worker/index.js';
+import worker, {handleApi} from '../worker/index.js';
 import {canonicalHtml} from '../scripts/site-meta.mjs';
 import {productHtml} from '../scripts/product-html.mjs';
 import {products} from '../src/shop.js';
 import {readFile} from 'node:fs/promises';
+
+test('legacy browsing redirects to the same public path and keeps active sessions on their host', async () => {
+  const env = {
+    APP_ORIGIN: 'https://nfchane.com',
+    LEGACY_APP_ORIGIN: 'https://nfchane.colves.workers.dev',
+    ASSETS: {fetch: () => new Response('asset')},
+  };
+  for (const path of ['/', '/urun/google-yorum-karti/?a=1&b=2', '/yonetim/']) {
+    const response = await worker.fetch(new Request(env.LEGACY_APP_ORIGIN + path), env);
+    assert.equal(response.status, 308);
+    assert.equal(response.headers.get('Location'), env.APP_ORIGIN + path);
+  }
+  const legacySession = new Request(env.LEGACY_APP_ORIGIN + '/yonetim/', {
+    headers: {Cookie: '__Host-nfchane_refresh=test-session'},
+  });
+  assert.equal(await (await worker.fetch(legacySession, env)).text(), 'asset');
+  assert.equal(await (await worker.fetch(new Request(env.APP_ORIGIN + '/'), env)).text(), 'asset');
+  const callback = await worker.fetch(new Request(env.LEGACY_APP_ORIGIN + '/api/auth/callback'), env);
+  assert.equal(callback.status, 303);
+  assert.equal(callback.headers.get('Location'), env.LEGACY_APP_ORIGIN + '/yonetim/#giris-hatasi');
+});
 
 test('canonical addresses use the primary domain and exclude query parameters',()=>{
   const html=canonicalHtml('<head><link rel="canonical" href="https://old.invalid/"></head>','/urun/google-yorum-karti/index.html?ref=qr');

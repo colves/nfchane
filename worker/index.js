@@ -146,4 +146,27 @@ export async function handleApi(request,env,fetcher=fetch){
     return json({error:error instanceof InputError?error.message:error instanceof ApiError?error.message:'İşlem tamamlanamadı. Daha sonra tekrar deneyin.'},error instanceof InputError?400:error instanceof ApiError?error.status:503);
   }
 }
-export default {async fetch(request,env){if(new URL(request.url).pathname.startsWith('/api/'))return handleApi(request,env);return env.ASSETS.fetch(request);}};
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/')) return handleApi(request, env);
+
+    if (url.origin === env.LEGACY_APP_ORIGIN && env.APP_ORIGIN && env.APP_ORIGIN !== url.origin &&
+        (request.method === 'GET' || request.method === 'HEAD')) {
+      const isSessionPage = /^\/(?:yonetim|hesabim|siparis|siparis-takibi)(?:\/(?:index\.html)?)?$/.test(url.pathname);
+      const cookieHeader = request.headers.get('Cookie') || '';
+      const hasLegacySession = /(?:^|;\s*)__Host-nfchane_(?:access|refresh|pkce)=[^;\s]+/.test(cookieHeader);
+      if (!isSessionPage || !hasLegacySession) {
+        return new Response(null, {
+          status: 308,
+          headers: {
+            Location: env.APP_ORIGIN + url.pathname + url.search,
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+};

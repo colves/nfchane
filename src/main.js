@@ -16,6 +16,10 @@ import { googleCardImage } from './google-card-assets.js';
 import { productPages, productPath, productIdFromPath } from './product-pages.js';
 import { products, makeSelection, addToCart, changeQuantity, requiresQuote, connectionLabels, linkLabels, menuLabels, connectionNote, sizeLabels, materialLabels, contactUrl, restoreCart, describeSelection } from './shop.js';
 
+// Browsers can inherit a bare fragment from an old QR URL after a redirect.
+if (location.hash === '' && location.href.endsWith('#')) {
+  history.replaceState(history.state, '', location.href.slice(0, -1));
+}
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hydrate = (root = document) => root.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
