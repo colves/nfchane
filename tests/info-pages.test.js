@@ -36,7 +36,8 @@ test('legal preparation pages do not request acceptance or collect personal data
     const html = infoHtml(template, slug);
     assert.equal((html.match(/<h1>/g) ?? []).length, 1);
     assert.doesNotMatch(html, /<(form|input|iframe)\b/);
-    assert.match(html, /noindex,nofollow/);
+    if (page.guideProduct) assert.doesNotMatch(html, /noindex,nofollow/);
+    else assert.match(html, /noindex,nofollow/);
     if (page.legal) assert.match(html, /Henüz yürürlükte olan bir metin değil/);
   }
 });

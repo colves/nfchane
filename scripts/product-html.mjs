@@ -5,8 +5,10 @@ const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<'
 
 export function productHtml(template, id) {
   const p = products.find(p => p.id === id);
-  return canonicalHtml(template,`/urun/${productPages[id].slug}/`).replace(/\r\n/g, '\n').replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(p.name)} — NFCHane Önizleme</title>`)
-    .replace(/<meta name="description" content="[^"]*"\s*\/>/, () => `<meta name="description" content="${escapeHtml(p.description)} Boyut, pleksi ve bağlantı seçeneklerini inceleyin. Satış henüz açık değildir." />`)
+  const extraDescription = id === 'google' ? ' NFC ve QR seçenekleriyle işletmenizin Google yorum sayfasını açın.' :
+    id === 'menu' ? ' NFC ve QR ile menü bağlantınızı veya hazır PDF menünüzü paylaşın.' : ' QR ve NFC seçeneklerini inceleyin.';
+  return canonicalHtml(template,`/urun/${productPages[id].slug}/`).replace(/\r\n/g, '\n').replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(p.name)} | NFCHane</title>`)
+    .replace(/<meta name="description" content="[^"]*"\s*\/>/, () => `<meta name="description" content="${escapeHtml(p.description)}${extraDescription} Satış henüz açılmadı." />`)
     .replace(/<main id="main">[\s\S]*?<\/main>/, () => `<main id="main">${renderProductPage(id)}</main>`)
     .replace(/<dialog id="product-dialog"[\s\S]*?<\/dialog>/, '')
     .replaceAll('href="#', 'href="../../#')

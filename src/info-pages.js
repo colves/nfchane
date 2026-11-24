@@ -1,5 +1,27 @@
 // Public preview information only: no customer records or unapproved contract text.
 export const infoPages = {
+  'google-yorum-karti-nasil-kullanilir': {
+    title: 'Google yorum kartı nasıl kullanılır?',
+    label: 'Yorum bağlantısını hazırlamadan kartı yerleştirmeye kadar.',
+    intro: 'Google yorum kartı, müşterinizin işletmenizin yorum sayfasına NFC veya QR ile ulaşmasını sağlar. Yorum yazıp yazmama kararı müşterinize aittir.',
+    guideProduct: ['google-yorum-karti', 'Google Yorum Kartı'],
+    sections: [
+      ['Doğru işletme bağlantısını kullanın', 'Google İşletme Profilinizden yorum isteme bağlantısını kopyalayın. Birden fazla şubeniz varsa, linkin doğru şubeyi açtığını başka bir telefondan kontrol edin.'],
+      ['NFC ve QR’ı farklı telefonlarla deneyin', 'NFC destekli telefonda kartı telefonun üst veya arka bölümüne yaklaştırın. QR için kamerayı koda tutup çıkan bağlantıyı açın. Kartı aydınlık ve kolay erişilen bir yere yerleştirin.'],
+      ['Müşteriden deneyimini paylaşmasını isteyin', 'Kasada veya çıkışta isteyen müşteriye kartı gösterin. Belirli bir puan istemeden deneyimini kendi sözleriyle paylaşmasına alan bırakın.'],
+    ],
+  },
+  'qr-menu-karti-nasil-kullanilir': {
+    title: 'QR menü kartı nasıl kullanılır?',
+    label: 'Menünüzü telefondan açılacak şekilde hazırlayın.',
+    intro: 'Dijital menü kartı, müşterinin masadan QR kodla veya NFC ile menüye ulaşmasını sağlar. Hazır bir web menüsü veya erişime açık bir PDF bağlantısı kullanılabilir.',
+    guideProduct: ['dijital-menu-karti', 'Dijital Menü Kartı'],
+    sections: [
+      ['Menüyü mobilde kontrol edin', 'Bağlantıyı oturum açmamış bir telefonda açın. Menü giriş istemeden yüklenmeli. Kategoriler ve fiyatlar yakınlaştırmaya gerek kalmadan okunabilmeli.'],
+      ['Menü değişikliklerini planlayın', 'Basılı QR kod sabit bir URL içerir. Menü içeriğini aynı adreste güncelleyebiliyorsanız kartı değiştirmek gerekmez. Adres değişecekse yönlendirme seçeneğinin koşullarını kartı hazırlamadan önce netleştirin.'],
+      ['Masadaki son yerinde deneyin', 'Kodu müşterinin oturduğu açıdan okutun. Parlama ve düşük ışık taramayı zorlaştırıyorsa kartın konumunu düzeltin. NFC de varsa onu ayrı deneyin.'],
+    ],
+  },
   iletisim: {
     title: 'İletişim', label: 'Birlikte netleştirelim.',
     intro: 'Kart seçimi, menü tasarımı ve adetli alım hakkında bize yazabilirsiniz.',
@@ -75,8 +97,8 @@ export function infoPageFromPath(pathname) {
 }
 
 export function renderInfoContent(slug = 'index') {
-  if (slug === 'index') return `<section class="info-intro"><p class="eyebrow">YARDIM VE BİLGİLENDİRME</p><h1>Aradığınız bilgi,<br>tek bir yerde.</h1><p>Kartlar hakkında konuşalım. Teslimat ve satış koşullarının hazırlık durumunu da buradan inceleyebilirsiniz.</p></section><div class="info-list">${Object.entries(infoPages).map(([key, page]) => `<a class="info-list-link" href="./${key}/"><span><strong>${page.title}</strong><small>${page.legal ? 'Metin hazırlığı · Onay bekliyor' : key === 'iletisim' ? 'WhatsApp ve iletişim bilgileri' : 'Kargo, üretim ve iade hazırlıkları'}</small></span><span aria-hidden="true">↗</span></a>`).join('')}</div>`;
+  if (slug === 'index') return `<section class="info-intro"><p class="eyebrow">YARDIM VE BİLGİLENDİRME</p><h1>Aradığınız bilgi,<br>tek bir yerde.</h1><p>Kartlar hakkında konuşalım. Teslimat ve satış koşullarının hazırlık durumunu da buradan inceleyebilirsiniz.</p></section><div class="info-list">${Object.entries(infoPages).map(([key, page]) => `<a class="info-list-link" href="./${key}/"><span><strong>${page.title}</strong><small>${page.guideProduct ? 'Kullanım rehberi' : page.legal ? 'Metin hazırlığı · Onay bekliyor' : key === 'iletisim' ? 'WhatsApp ve iletişim bilgileri' : 'Kargo, üretim ve iade hazırlıkları'}</small></span><span aria-hidden="true">↗</span></a>`).join('')}</div>`;
   const page = infoPages[slug];
   if (!page) throw new Error('Bilinmeyen bilgi sayfası');
-  return `<nav class="info-breadcrumb" aria-label="Sayfa yolu"><a href="../">Yardım ve bilgi</a><span aria-hidden="true">/</span><span aria-current="page">${page.title}</span></nav><article class="info-article"><header class="info-intro"><p class="eyebrow">${page.legal ? 'METİN HAZIRLIĞI · ONAY BEKLİYOR' : 'YARDIM VE BİLGİLENDİRME'}</p><h1>${page.title}</h1><p class="info-lead">${page.label}</p><p>${page.intro}</p></header>${page.legal ? '<aside class="info-notice"><strong>Henüz yürürlükte olan bir metin değil.</strong><p>İşletme bilgileri ve gerekli danışman onayları tamamlandıktan sonra nihai metin yayımlanacak.</p></aside>' : ''}<div class="info-sections">${page.sections.map(([title, body]) => `<section><h2>${esc(title)}</h2><p>${esc(body)}</p></section>`).join('')}</div>${slug === 'iletisim' ? '<a class="button primary info-contact" href="https://wa.me/905511956312" target="_blank" rel="noopener noreferrer">WhatsApp’ta görüşün <span aria-hidden="true">↗</span><span class="info-sr-only"> (yeni sekmede açılır)</span></a><p class="info-small">Lütfen kart bilgisi, şifre veya kimlik belgesi göndermeyin.</p>' : '<a class="text-link info-contact" href="../iletisim/">Sorunuz mu var? Bizimle görüşün <span aria-hidden="true">→</span></a>'}</article>`;
+  return `<nav class="info-breadcrumb" aria-label="Sayfa yolu"><a href="../">Yardım ve bilgi</a><span aria-hidden="true">/</span><span aria-current="page">${page.title}</span></nav><article class="info-article"><header class="info-intro"><p class="eyebrow">${page.legal ? 'METİN HAZIRLIĞI · ONAY BEKLİYOR' : 'YARDIM VE BİLGİLENDİRME'}</p><h1>${page.title}</h1><p class="info-lead">${page.label}</p><p>${page.intro}</p></header>${page.legal ? '<aside class="info-notice"><strong>Henüz yürürlükte olan bir metin değil.</strong><p>İşletme bilgileri ve gerekli danışman onayları tamamlandıktan sonra nihai metin yayımlanacak.</p></aside>' : ''}<div class="info-sections">${page.sections.map(([title, body]) => `<section><h2>${esc(title)}</h2><p>${esc(body)}</p></section>`).join('')}</div>${page.guideProduct ? `<a class="text-link info-contact" href="../urun/${page.guideProduct[0]}/">${page.guideProduct[1]} seçeneklerini inceleyin</a>` : ''}${slug === 'iletisim' ? '<a class="button primary info-contact" href="https://wa.me/905511956312" target="_blank" rel="noopener noreferrer">WhatsApp’ta görüşün <span aria-hidden="true">↗</span><span class="info-sr-only"> (yeni sekmede açılır)</span></a><p class="info-small">Lütfen kart bilgisi, şifre veya kimlik belgesi göndermeyin.</p>' : '<a class="text-link info-contact" href="../iletisim/">Sorunuz mu var? Bizimle görüşün <span aria-hidden="true">→</span></a>'}</article>`;
 }

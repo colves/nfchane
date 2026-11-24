@@ -2,7 +2,7 @@ import { InputError,email,text,uuid,validateOrder,validateProduct,validateFulfil
 
 const names={access:'__Host-nfchane_access',refresh:'__Host-nfchane_refresh',verifier:'__Host-nfchane_pkce',flow:'__Host-nfchane_flow',next:'__Host-nfchane_next'};
 const encoder=new TextEncoder();
-const security={'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY'};
+const security={'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','X-Robots-Tag':'noindex'};
 class ApiError extends Error { constructor(status,message){super(message);this.status=status;} }
 const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8',...security,...headers}});
 const b64=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
