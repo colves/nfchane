@@ -8,4 +8,4 @@ for (const slug of Object.keys(infoPages)) {
   await mkdir(folder, { recursive: true });
   await writeFile(new URL('index.html', folder), infoHtml(template, slug));
 }
-console.log('Yardım merkezi ve 7 bağımsız bilgi sayfası hazırlandı.');
+console.log('Yardım merkezi ve ' + Object.keys(infoPages).length + ' bağımsız bilgi sayfası hazırlandı.');

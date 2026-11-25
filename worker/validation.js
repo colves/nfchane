@@ -66,6 +66,12 @@ export function validateOrder(input) {
     billing.company=text(b.company,'Firma unvanı',200); billing.taxOffice=text(b.taxOffice,'Vergi dairesi',100); billing.taxNumber=text(b.taxNumber,'Vergi numarası',10);
     if (!/^\d{10}$/.test(billing.taxNumber)) fail('Vergi numarası 10 rakam olmalı.');
   }
+  if (b.address != null) {
+    if (!object(b.address) || b.address.country !== 'TR') fail('Fatura adresini kontrol edin.');
+    const {line1,city,district,postcode}=b.address;
+    billing.address={line1:text(line1,'Fatura açık adresi',500),city:text(city,'Fatura ili',80),district:text(district,'Fatura ilçesi',80),postcode:text(postcode,'Fatura posta kodu',5),country:'TR'};
+    if (!/^\d{5}$/.test(billing.address.postcode)) fail('Fatura posta kodu 5 rakam olmalı.');
+  }
   const seen=new Set();
   const items=input.items.map(item=>{
     if(!object(item)||!ids.includes(item.productId)||!methods.includes(item.connection)||!['static','dynamic'].includes(item.linkType)) fail('Ürün seçeneklerini kontrol edin.');
