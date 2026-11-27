@@ -1,3 +1,4 @@
+import {provinces} from '../worker/provinces.js';
 import {api,esc,message} from './preparation.js';
 import {cardUnitMinor,cardSubtotalMinor,formatCardPrice,dynamicQrChangeLimit} from './card-pricing.js';
 import {products,restoreCart,connectionLabels,linkLabels,menuLabels,contactUrl} from './shop.js';
@@ -23,6 +24,10 @@ const individualFields=document.querySelector('#individual-fields');
 const companyFields=document.querySelector('#company-fields');
 const identity=document.querySelector('#billing-identity');
 
+for (const field of [form.elements.city, form.elements.billingCity]) {
+  for (const city of provinces) field.add(new Option(city, city));
+}
+
 function syncBillingFields(){
   const company=form.elements.billingType.value==='company';
   companyFields.hidden=!company;
@@ -39,20 +44,43 @@ form.addEventListener('change',event=>{
 window.addEventListener('pageshow',syncBillingFields);
 syncBillingFields();
 form.addEventListener('submit',async event=>{
-  event.preventDefault();if(!canSubmit||!cart.length)return;submit.disabled=true;submit.setAttribute('aria-busy','true');
+  event.preventDefault();if(!cart.length||submit.disabled)return;submit.disabled=true;submit.setAttribute('aria-busy','true');
   try{
     const values=Object.fromEntries(new FormData(form));
     const payload=validateOrder({requestKey,accountMode,contact:{name:values.name,email:values.email,phone:values.phone},address:{recipient:values.recipient,line1:values.line1,city:values.city,district:values.district,postcode:values.postcode,country:'TR'},billing:{type:values.billingType,company:values.company,taxOffice:values.taxOffice,taxNumber:values.taxNumber,...(values.separateBilling?{address:{line1:values.billingLine1,city:values.billingCity,district:values.billingDistrict,postcode:values.billingPostcode,country:'TR'}}:{})},preInformationConfirmed:form.elements.preInformationConfirmed.checked,distanceContractAccepted:form.elements.distanceContractAccepted.checked,confirmTest:form.elements.confirmTest.checked,items:cart.map((item,index)=>({...item,sizeCm:Number(item.size.split('x')[0]),menuService:item.menuType,personalization:{businessName:values[`businessName-${index}`],targetUrl:values[`targetUrl-${index}`],lockNfc:values[`lockNfc-${index}`]==="on",notes:values[`notes-${index}`],accountHolder:values[`accountHolder-${index}`],iban:values[`iban-${index}`]}}))});
+    if (!canSubmit) {
+      message(notice,'Test formu doğrulandı. Bilgiler bu tarayıcıda kontrol edildi. Kalıcı test kaydı oluşturmak için yönetici girişi yapabilirsiniz.');
+      notice.scrollIntoView({block:'center'});
+      return;
+    }
     const result=await api('/api/admin/test-orders',{method:'POST',data:payload});
     document.querySelector('#order-layout').hidden=true;const panel=document.querySelector('#order-result');panel.hidden=false;
     const link=result.trackingToken?new URL(`../siparis-takibi/#token=${result.trackingToken}`,location.href).href:'';
     panel.innerHTML=`<h2>Test kaydı ${result.created?'oluşturuldu':'zaten oluşturulmuş'}.</h2><p class="prep-small">Ödeme alınmadı. Üretim ve kargo başlatılmadı.</p><p style="margin-top:16px">Kayıt: <strong>${esc(result.id)}</strong></p>${link?`<p class="prep-small" style="margin-top:16px">Bu test takip bağlantısı 30 gün geçerlidir ve yönetici girişi gerektirir. Bağlantıyı paylaşmayın.</p><p class="prep-token" style="margin-top:12px">${esc(link)}</p><div class="prep-actions"><a class="button outline" href="${esc(link)}">Test siparişini takip et</a></div>`:''}<div class="prep-actions"><a class="button primary" href="../yonetim/">Yönetim paneline dön</a><a class="text-link" href="./">Yeni test hazırla</a></div>`;
     form.reset();syncBillingFields();panel.scrollIntoView({behavior:'auto',block:'start'});
-  }catch(error){message(notice,error.message,true);notice.scrollIntoView({behavior:'auto',block:'center'});}finally{submit.disabled=!canSubmit;submit.removeAttribute('aria-busy');}
+  }catch(error){message(notice,error.message,true);notice.scrollIntoView({behavior:'auto',block:'center'});}finally{submit.disabled=false;submit.removeAttribute('aria-busy');}
 });
 async function start(){
   if(new URLSearchParams(location.search).get('misafir')!=='1'){try{const customer=await api('/api/customer/session');if(customer.authenticated){accountMode='member';form.elements.email.value=customer.user.email;}}catch{}}
-  try{const session=await api('/api/session');canSubmit=session.admin&&cart.length>0;submit.disabled=!canSubmit;document.querySelector('#order-access').textContent=session.admin?'Yönetici doğrulandı. Yalnızca test kaydı oluşturabilirsiniz.':'Test kaydı için yönetim panelinden giriş yapın. Form bilgileri sunucuya gönderilmez.';}catch{document.querySelector('#order-access').textContent='Yönetim bağlantısı hazır değil. Bu form şu anda kayıt göndermez.';}
+  try {
+    const session = await api('/api/session');
+    canSubmit = session.admin === true;
+  } catch {
+    canSubmit = false;
+  }
+  submit.textContent = canSubmit ? 'Test kaydı oluştur' : 'Test formunu doğrula';
+  submit.disabled = false;
+  const access = document.querySelector('#order-access');
+  access.textContent = canSubmit ? 'Yönetici oturumu açık.' : 'Formu kayıt oluşturmadan deneyebilirsiniz. ';
+  if (!canSubmit) {
+    const login = document.createElement('a');
+    login.className = 'text-link';
+    login.href = '../yonetim/';
+    login.target = '_blank';
+    login.rel = 'noopener';
+    login.textContent = 'Kalıcı test kaydı için yönetici girişi';
+    access.append(login, '. Giriş yaptıktan sonra bu sayfayı yenileyin.');
+  }
 }
 if (cart.length) start();
 window.addEventListener('pageshow', event => {

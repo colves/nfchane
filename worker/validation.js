@@ -1,3 +1,4 @@
+import {provinces} from './provinces.js';
 import {dynamicQrChangeLimit} from '../src/card-pricing.js';
 
 export class InputError extends Error {}
@@ -51,6 +52,19 @@ export function validateProduct(input) {
   if (/[&"]/.test(name+description)) fail('Ürün metninde HTML veya çift tırnak kullanmayın.');
   return {name,description,price_minor:priceMinor(input.price_minor)};
 }
+function streetAddress(value, label) {
+  const street = text(value, label, 500);
+  if (street.length < 5) fail(label + ' en az 5 karakter olmalı.');
+  return street;
+}
+
+function province(value) {
+  const city = text(value, 'İl', 80);
+  const canonical = provinces.find(name => name.localeCompare(city, 'tr', {sensitivity:'base'}) === 0);
+  if (!canonical) fail('Listeden geçerli bir il seçin.');
+  return canonical;
+}
+
 export function validateOrder(input) {
   if (!object(input) || !Array.isArray(input.items) || input.items.length<1 || input.items.length>30) fail('Sepette 1–30 ürün seçimi olmalı.');
   const requestKey=uuid(input.requestKey);
@@ -60,7 +74,7 @@ export function validateOrder(input) {
   if (!/^(?:0?5\d{9}|905\d{9})$/.test(phone)) fail('Geçerli bir Türkiye cep telefonu yazın.');
   const contact={name:text(c.name,'Ad soyad',150),email:email(c.email),phone:phone.startsWith('90')?phone:`90${phone.replace(/^0/,'')}`};
   if (a.country !== 'TR') fail('Gönderim yalnızca Türkiye’ye yapılacak.');
-  const address={recipient:text(a.recipient,'Teslim alacak kişi',150),line1:text(a.line1,'Açık adres',500),city:text(a.city,'İl',80),district:text(a.district,'İlçe',80),postcode:text(a.postcode,'Posta kodu',5),country:'TR'};
+  const address={recipient:text(a.recipient,'Teslim alacak kişi',150),line1:streetAddress(a.line1,'Açık adres'),city:province(a.city),district:text(a.district,'İlçe',80),postcode:text(a.postcode,'Posta kodu',5),country:'TR'};
   if (!/^\d{5}$/.test(address.postcode)) fail('Posta kodu 5 rakam olmalı.');
   if (!['individual','company'].includes(b.type)) fail('Fatura türünü seçin.');
   const billing={type:b.type,name:contact.name};
@@ -71,7 +85,7 @@ export function validateOrder(input) {
   if (b.address != null) {
     if (!object(b.address) || b.address.country !== 'TR') fail('Fatura adresini kontrol edin.');
     const {line1,city,district,postcode}=b.address;
-    billing.address={line1:text(line1,'Fatura açık adresi',500),city:text(city,'Fatura ili',80),district:text(district,'Fatura ilçesi',80),postcode:text(postcode,'Fatura posta kodu',5),country:'TR'};
+    billing.address={line1:streetAddress(line1,'Fatura açık adresi'),city:province(city),district:text(district,'Fatura ilçesi',80),postcode:text(postcode,'Fatura posta kodu',5),country:'TR'};
     if (!/^\d{5}$/.test(billing.address.postcode)) fail('Fatura posta kodu 5 rakam olmalı.');
   }
   const seen=new Set();

@@ -40,3 +40,17 @@ test('NFC lock is optional and a dynamic QR order uses the server limit',()=>{
   delete line.personalization.lockNfc;
   assert.equal(validateOrder(input).items[0].personalization.lockNfc,undefined);
 });
+
+test('delivery and separate billing require a listed province and five trimmed address characters', () => {
+  for (const billing of [false, true]) {
+    const input = orderFixture();
+    const address = billing ? (input.billing.address = {...input.address}) : input.address;
+    address.line1 = '  1234  ';
+    assert.throws(() => validateOrder(input), /5 karakter/);
+    address.line1 = '12345';
+    address.city = 'Atlantis';
+    assert.throws(() => validateOrder(input), /geçerli bir il/);
+    address.city = 'Kütahya';
+    assert.doesNotThrow(() => validateOrder(input));
+  }
+});
