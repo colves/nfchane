@@ -12,6 +12,15 @@ export const products = [
   { id: 'ilan', name: 'İlan Bağlantısı Kartı', category: 'isletme', label: 'İlanlar', headline: 'İlanlarımızı inceleyin.', subtitle: 'Detaylar bir dokunuş uzakta.', description: 'İlanınızı veya mağaza sayfanızı tek bağlantıyla paylaşın.', tone: 'ilan', price: null, symbol: 'home' },
 ];
 applyCatalogSnapshot(products, catalogSnapshot);
+
+export function catalogOrder(excludedId) {
+  const cards = products.filter(card => card.id !== excludedId && card.id !== 'ilan');
+  if (excludedId !== 'ilan') {
+    cards.splice(3, 0, products.find(card => card.id === 'ilan'));
+  }
+  return cards;
+}
+
 export const connectionLabels = { hybrid: 'QR + NFC', nfc: 'Yalnız NFC', qr: 'Yalnız QR' };
 export const linkLabels = { static: 'Sabit bağlantı', dynamic: 'Dinamik QR' };
 export function connectionNote(connection, linkType) {

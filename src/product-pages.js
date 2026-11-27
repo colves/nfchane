@@ -1,6 +1,6 @@
 import { renderCardMedia } from './product-media.js';
 import { renderProductConfig, photoProductIds } from './product-config.js';
-import { products } from './shop.js';
+import { products, catalogOrder } from './shop.js';
 import { infoPages } from './info-pages.js';
 import { renderServiceHero } from './service-visuals.js';
 
@@ -20,7 +20,7 @@ export function productIdFromPath(path) { return products.find(p => path.endsWit
 export function renderProductPage(id) {
   const p = products.find(p => p.id === id), d = productPages[id];
   const guide = Object.entries(infoPages).find(([, page]) => page.guideProduct?.[0] === d.slug);
-  const otherCards = products.filter(card => card.id !== id).map(card =>
+  const otherCards = catalogOrder(id).map(card =>
     `<a class="other-card" href="${productPath(card.id, '../../')}"><div class="product-art art-${card.tone}">${renderCardMedia(card, {base:'../../', placement:'catalog'})}</div><strong>${card.name}</strong></a>`
   ).join('');
   const menuHelp = id === 'menu' ? `<details class="menu-service-help"><summary>Hangi menü hizmeti size uygun?</summary><div class="compact-menu-options">${[['Hazır bağlantı', 'Mevcut menü sayfanızı kullanırız.', 'link'], ['Hazır PDF', 'Hazır dosyanız için yayın koşullarını belirleriz.', 'pdf'], ['PDF tasarımı', 'Menünüzü ürün ve fiyatlarınıza göre tasarlarız.', 'design-pdf'], ['Web menüsü', 'Telefon ekranına uygun bir menü hazırlarız.', 'design-web']].map(([title,copy,value])=>`<div><strong>${title}</strong><p>${copy}</p><button type="button" class="text-link" data-menu-choice="${value}">Bu hizmeti seç ↗</button></div>`).join('')}</div><p class="field-note">Tasarım, ürün girişi, revizyon ve güncellemelerin kapsamı teklifinizde belirlenir.</p></details>` : '';
