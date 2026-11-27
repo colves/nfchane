@@ -1,6 +1,6 @@
 # NFCHane satış belgeleri — iç inceleme taslağı
 
-**Onay bekliyor.** 1 Aralık 2026 en erken hedef. Köşeli parantezler resmî belge veya danışman teyidi gereken alanları gösterir.
+**Onay bekliyor.** Açılış tarihi işletme hazırlıklarına bağlı. Köşeli parantezler resmî belge veya danışman teyidi gereken alanları gösterir.
 
 ## Metin ve yerleşim
 
@@ -22,7 +22,7 @@ Vergi levhası, işletme IBAN’ı ve şahsi kimlik bilgileri herkese açık say
 2. Onay anında sunucu toplamı ve onaylı metinleri yeniden hesaplar. Özet değişirse kullanıcı tekrar inceleyip onaylar. Siparişle birlikte metnin tam içeriğini, sürümünü ve onay zamanını kaydet. Aynı kayıt e-posta ekini oluşturur. [Doğrulanmış gönderici ve sağlayıcı] belirlendiğinde saklanabilir belgeyi ilet ve sağlayıcı referansını kaydet. Genel sayfa bağlantısı tek başına teslim sayılmaz.
 3. PayTR işlemi, sunucuda kaydedilmiş işlem kimliği ve tutar ile eşleştirilir. Başlangıç varsayımı TRY ve taksitsiz kart. İmzayı ve tahsilat tutarını doğrula. Tarayıcı dönüşü ödeme kanıtı sayılmaz. Başarılı bildirim, ödeme ve e-posta kuyruğu tek veritabanı işleminde işlenir. Aynı bildirim tekrar gelince ikinci işlem oluşturulmaz. [Test hesabı ve sağlayıcı yapılandırması] tamamlandıktan sonra gerçek simülasyon yapılır.
 4. Doğrulanmış gerçek ödeme sonrası alıcının e-Fatura statüsünü Mikrogrup e-Portal’da teyit et. Fatura adresi, satış bedeli, KDV, ödeme şekli ve tarihi, mağaza adresi, taşıyıcı unvanı ve gereken vergi bilgisi, sevk tarihi, belge numarası ve tarihini kontrol et. Ödeme komisyonu ayrıca izlenir. TCKN, yükümlülük ve alan gereksinimi doğrulanana kadar istenmez.
-5. Satış öncesi [resmî satıcı belgeleri ve 47.91.14 kaydı], [ürün KDV’si], [KEP ve ETBİS], [PayTR], [kargo ve dinamik QR şartları], [avukat onaylı metinler], [e-posta teslimi] ve [muhasebeciyle Mikrogrup alanları] tamamlanır.
+5. Satış öncesi [resmî satıcı belgeleri ve muhasebecinin belirlediği 47.78.04 faaliyet kaydının teyidi], [ürün KDV’si], [KEP ve ETBİS], [PayTR], [kargo ve dinamik QR şartları], [avukat onaylı metinler], [e-posta teslimi] ve [muhasebeciyle Mikrogrup alanları] tamamlanır.
 
 ## Resmî kaynaklar
 

@@ -9,3 +9,6 @@
 dl.prep-summary{border-block:1px solid var(--line);margin-block:20px;padding-block:14px;font-size:13px}
 dl.prep-summary dt{font-weight:700}
 dl.prep-summary dd{margin:2px 0 0;color:var(--muted)}
+
+.prep-paytr-status{margin-block:16px;font-size:14px;overflow-wrap:anywhere}
+.prep-paytr-frame iframe{display:block;width:100%;height:75vh;min-height:570px;border:1px solid var(--line);border-radius:10px}

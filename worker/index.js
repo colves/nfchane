@@ -1,5 +1,9 @@
 import { InputError,email,text,uuid,validateOrder,validateProduct,validateFulfilment,statuses } from './validation.js';
 
+import {PaytrTestAttempt,PaytrTestError,paytrTestReady,startPaytrTest,getPaytrTest,acceptPaytrTestNotification} from './paytr-test.js';
+
+export {PaytrTestAttempt};
+
 const names={access:'__Host-nfchane_access',refresh:'__Host-nfchane_refresh',verifier:'__Host-nfchane_pkce',flow:'__Host-nfchane_flow',next:'__Host-nfchane_next'};
 const encoder=new TextEncoder();
 const security={'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','X-Robots-Tag':'noindex'};
@@ -62,6 +66,16 @@ export async function handleApi(request,env,fetcher=fetch){
     if(!['GET','POST','PATCH'].includes(request.method))throw new ApiError(405,'Bu istek yöntemi desteklenmiyor.');
     // Neither an accidental environment flag nor client-supplied totals can open checkout.
     if(path==='/api/orders'||path==='/api/payments')throw new ApiError(423,'Satış ve ödeme kapalı. Gerçek sipariş kabul edilmiyor.');
+    if(path==='/api/paytr/test/return'&&request.method==='GET'){
+      return new Response('<!doctype html><html lang="tr"><meta charset="utf-8"><title>PayTR test sonucu</title><h1>Test ekranı kapandı</h1><p>Sonucu yönetim panelinden kontrol edin. Durum yalnızca PayTR bildirimi doğrulandıktan sonra güncellenir.</p></html>',{
+        headers:{...security,'Content-Type':'text/html; charset=utf-8','X-Frame-Options':'SAMEORIGIN','Content-Security-Policy':"default-src 'none'; frame-ancestors 'self'; base-uri 'none'"},
+      });
+    }
+    if(path==='/api/paytr/test/callback'&&request.method==='POST'){
+      if(url.origin!==env.APP_ORIGIN||!paytrTestReady(env))throw new ApiError(423,'PayTR testi yapılandırılmadı.');
+      if(!await acceptPaytrTestNotification(request,env))throw new ApiError(400,'PayTR test bildirimi doğrulanamadı.');
+      return new Response('OK',{headers:{...security,'Content-Type':'text/plain; charset=utf-8'}});
+    }
     if(request.method!=='GET'&&request.headers.get('Origin')!==authOrigin(url,env))throw new ApiError(403,'İstek kaynağı doğrulanamadı.');
     if(!configured(env))throw new ApiError(503,'Yönetim bağlantısı hazırlanıyor.');
     if(path.startsWith('/api/customer/')&&!['/api/customer/session','/api/customer/orders','/api/customer/status'].includes(path)&&env.CUSTOMER_AUTH_ENABLED!=='true')throw new ApiError(423,'Müşteri üyeliği e-posta gönderim hizmeti tamamlandıktan sonra açılacak. Misafir olarak formu inceleyebilirsiniz.');
@@ -114,6 +128,16 @@ export async function handleApi(request,env,fetcher=fetch){
     try{session=await adminSession(request,env,fetcher);}catch(error){if(path==='/api/session'&&[401,403].includes(error.status))return clearCookies(json({authenticated:false,admin:false}));throw error;}
     const {token,user}=session;let response;
     if(path==='/api/session'&&request.method==='GET')response=json({authenticated:true,admin:true,user});
+    else if(path==='/api/admin/paytr-test'&&request.method==='GET')response=json({ready:url.origin===env.APP_ORIGIN&&paytrTestReady(env)});
+    else if(path.startsWith('/api/admin/paytr-test/')){
+      if(url.origin!==env.APP_ORIGIN||!paytrTestReady(env))throw new ApiError(423,'PayTR testi yapılandırılmadı.');
+      if(path==='/api/admin/paytr-test/start'&&request.method==='POST'){
+        const data=await body(request);
+        response=json(await startPaytrTest(env,{requestKey:uuid(data.requestKey),owner:user.id,ip:request.headers.get('CF-Connecting-IP')},fetcher));
+      }else if(request.method==='GET'){
+        response=json(await getPaytrTest(env,path.split('/').at(-1),user.id));
+      }else throw new ApiError(405,'Bu istek yöntemi desteklenmiyor.');
+    }
     else if(path==='/api/admin/products'&&request.method==='GET')response=json(await rpc(env,token,'admin_products',{},fetcher));
     else if(/^\/api\/admin\/products\/[a-z]+$/.test(path)&&request.method==='PATCH')response=json(await rpc(env,token,'admin_update_product',{_id:path.split('/').at(-1),_data:validateProduct(await body(request))},fetcher));
     else if(path==='/api/admin/orders'&&request.method==='GET'){
@@ -143,7 +167,9 @@ export async function handleApi(request,env,fetcher=fetch){
       const destination=['customer','recovery'].includes(flow)?'/hesabim/':'/yonetim/';
       return clearCookies(new Response(null,{status:303,headers:{...security,Location:authOrigin(url,env)+destination+'#giris-hatasi'}}));
     }
-    return json({error:error instanceof InputError?error.message:error instanceof ApiError?error.message:'İşlem tamamlanamadı. Daha sonra tekrar deneyin.'},error instanceof InputError?400:error instanceof ApiError?error.status:503);
+    if(error instanceof ApiError||error instanceof PaytrTestError)return json({error:error.message},error.status);
+    if(error instanceof InputError)return json({error:error.message},400);
+    return json({error:'İşlem tamamlanamadı. Daha sonra tekrar deneyin.'},503);
   }
 }
 export default {
@@ -167,6 +193,15 @@ export default {
       }
     }
 
-    return env.ASSETS.fetch(request);
+    const asset = await env.ASSETS.fetch(request);
+    if (url.origin === env.APP_ORIGIN && url.pathname === '/yonetim/' && asset.ok) {
+      const headers = new Headers(asset.headers);
+      const csp = headers.get('Content-Security-Policy');
+      if (csp) {
+        headers.set('Content-Security-Policy', csp.replace("frame-src 'none'", "frame-src 'self' https://www.paytr.com"));
+        return new Response(asset.body, {status:asset.status,headers});
+      }
+    }
+    return asset;
   },
 };

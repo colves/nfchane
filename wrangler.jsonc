@@ -6,6 +6,8 @@
   "workers_dev": true,
   "routes": [{"pattern":"nfchane.com","custom_domain":true}],
   "ratelimits": [{"name":"ADMIN_LOGIN_LIMITER","namespace_id":"2626112301","simple":{"limit":1,"period":60}}],
+  "durable_objects": {"bindings":[{"name":"PAYTR_TEST_ATTEMPTS","class_name":"PaytrTestAttempt"}]},
+  "migrations": [{"tag":"paytr-test-v1","new_sqlite_classes":["PaytrTestAttempt"]}],
   "vars": {"APP_ORIGIN":"https://nfchane.com","LEGACY_APP_ORIGIN":"https://nfchane.colves.workers.dev","CUSTOMER_AUTH_ENABLED":"false"},
   "assets": {
     "directory": "./dist",
