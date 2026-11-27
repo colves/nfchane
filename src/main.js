@@ -4,6 +4,7 @@ import { renderCatalogCards } from './catalog.js';
 import { icon } from './icons.js';
 import '@fontsource-variable/manrope';
 import './readability.css';
+import './brand.css';
 import './product-pages.css';
 import './service-themes.css';
 import './product-calm.css';
