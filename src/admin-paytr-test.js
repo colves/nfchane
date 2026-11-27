@@ -9,13 +9,13 @@ const labels = {
   unavailable:'PayTR test ekranı açılamadı.',
 };
 
-export async function showPaytrTest(container) {
+export async function showPaytrTest(container, order = null) {
   const {ready} = await api('/api/admin/paytr-test');
   container.innerHTML = `<section class="prep-panel">
-    <h2>PayTR misafir ödeme testi</h2>
-    <p class="prep-small">Örnek bir kart ve test bedeli kullanılır. Gerçek sipariş, fatura veya tahsilat oluşturulmaz. PayTR ekranında yalnız hazır test kartını kullanın.</p>
+    <h2>${order ? 'Siparişe bağlı PayTR testi' : 'PayTR misafir ödeme testi'}</h2>
+    <p class="prep-small">${order ? 'Kart ara toplamı mağaza fiyatlarıyla hesaplanır. Kargo ve ayrı teklifli hizmetler test bedeline dahil edilmez.' : 'Örnek bir kart ve 10 TL test bedeli kullanılır.'} Gerçek sipariş, fatura veya tahsilat oluşturulmaz. PayTR ekranında yalnız hazır test kartını kullanın.</p>
     ${ready?`<div class="prep-actions">
-      <button class="button primary" type="button" data-test-start>Yeni test başlat</button>
+      <button class="button primary" type="button" data-test-start>${order ? 'Bu siparişin test ekranını aç' : 'Yeni test başlat'}</button>
       <button class="button outline" type="button" data-test-status disabled>Sonucu kontrol et</button>
     </div><p class="prep-paytr-status" role="status"></p><div class="prep-paytr-frame"></div>`
       :'<p class="prep-note">PayTR test bağlantısı için Worker sırları ve test e-postası gerekiyor.</p>'}
@@ -25,7 +25,7 @@ export async function showPaytrTest(container) {
   const refresh = container.querySelector('[data-test-status]');
   const status = container.querySelector('.prep-paytr-status');
   const frameHost = container.querySelector('.prep-paytr-frame');
-  let reference = sessionStorage.getItem('nfchane-paytr-test');
+  let reference = order ? 'NFCO'+order.id.replaceAll('-','') : sessionStorage.getItem('nfchane-paytr-test');
   let busy = false;
 
   async function run(work) {
@@ -35,7 +35,7 @@ export async function showPaytrTest(container) {
     try {
       const data = await work();
       reference = data.reference;
-      sessionStorage.setItem('nfchane-paytr-test',reference);
+      if (!order) sessionStorage.setItem('nfchane-paytr-test',reference);
       status.textContent = `${labels[data.status]} ${money(data.amountMinor)} · ${reference}`;
       const iframe = frameHost.querySelector('iframe');
       if (!data.iframeUrl) iframe?.remove();
@@ -43,9 +43,9 @@ export async function showPaytrTest(container) {
         frameHost.innerHTML = `<iframe src="${esc(data.iframeUrl)}" title="PayTR test ödeme ekranı" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
       }
     } catch (error) {
-      status.textContent = error.message;
+      status.textContent = order && error.status === 404 ? 'Bu sipariş için henüz ödeme testi yok.' : error.message;
     } finally {
-      start.disabled = false;
+      start.disabled = Boolean(order && order.status !== 'awaiting_payment');
       refresh.disabled = !reference;
       busy = false;
     }
@@ -55,7 +55,7 @@ export async function showPaytrTest(container) {
   start.addEventListener('click',()=>{
     frameHost.replaceChildren();
     status.textContent = labels.creating;
-    void run(()=>api('/api/admin/paytr-test/start',{method:'POST',data:{requestKey:crypto.randomUUID()}}));
+    void run(()=>api('/api/admin/paytr-test/start',{method:'POST',data:order ? {orderId:order.id} : {requestKey:crypto.randomUUID()}}));
   });
   refresh.addEventListener('click', read);
   if (reference) await read();

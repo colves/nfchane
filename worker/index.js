@@ -1,6 +1,6 @@
 import { InputError,email,text,uuid,validateOrder,validateProduct,validateFulfilment,statuses } from './validation.js';
 
-import {PaytrTestAttempt,PaytrTestError,paytrTestReady,startPaytrTest,getPaytrTest,acceptPaytrTestNotification} from './paytr-test.js';
+import {PaytrTestAttempt,PaytrTestError,paytrTestReady,startPaytrTest,testOrderQuote,getPaytrTest,acceptPaytrTestNotification} from './paytr-test.js';
 
 export {PaytrTestAttempt};
 
@@ -133,7 +133,10 @@ export async function handleApi(request,env,fetcher=fetch){
       if(url.origin!==env.APP_ORIGIN||!paytrTestReady(env))throw new ApiError(423,'PayTR testi yapılandırılmadı.');
       if(path==='/api/admin/paytr-test/start'&&request.method==='POST'){
         const data=await body(request);
-        response=json(await startPaytrTest(env,{requestKey:uuid(data.requestKey),owner:user.id,ip:request.headers.get('CF-Connecting-IP')},fetcher));
+        const orderId = data.orderId === undefined ? null : uuid(data.orderId);
+        const requestKey = orderId || uuid(data.requestKey);
+        const quote = orderId ? testOrderQuote(await rpc(env,token,'admin_order_detail',{_id:orderId},fetcher),orderId) : undefined;
+        response=json(await startPaytrTest(env,{requestKey,orderId,quote,owner:user.id,ip:request.headers.get('CF-Connecting-IP')},fetcher));
       }else if(request.method==='GET'){
         response=json(await getPaytrTest(env,path.split('/').at(-1),user.id));
       }else throw new ApiError(405,'Bu istek yöntemi desteklenmiyor.');

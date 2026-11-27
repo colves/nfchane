@@ -4,10 +4,10 @@ import {createHmac} from 'node:crypto';
 import {PaytrTestAttempt,handleApi} from '../worker/index.js';
 
 const origin = 'https://nfchane.com';
-function fixture() {
+function fixture({linked=false,orderStatus='awaiting_payment',isTest=true}={}) {
   const owner = 'cc4519e2-b3ba-4b34-b657-a5680d71ae31';
   const requestKey = 'a7ed1d03-0d4c-456c-9f90-223b3cd08429';
-  const reference = 'NFCT'+requestKey.replaceAll('-','');
+  const reference = (linked?'NFCO':'NFCT')+requestKey.replaceAll('-','');
   const objects = new Map();
   const store = {
     idFromName:id=>id,
@@ -43,14 +43,20 @@ function fixture() {
   const fetcher = async (url,init) => {
     if (url.endsWith('/auth/v1/user')) return Response.json({id:owner,email_confirmed_at:'2026-11-20'});
     if (url.endsWith('/rest/v1/rpc/admin_session')) return Response.json({id:owner,role:'owner'});
+    if (url.endsWith('/rest/v1/rpc/admin_order_detail')) return Response.json({
+      order:{id:requestKey,is_test:isTest,status:orderStatus,created_at:new Date().toISOString(),customer_email:'private@example.invalid'},
+      items:[{product_id:'google',connection_method:'hybrid',link_type:'dynamic',quantity:2,unit_price_minor:1},
+        {product_id:'iban',connection_method:'nfc',link_type:'static',quantity:1,unit_price_minor:0}],
+    });
     if (url !== 'https://www.paytr.com/odeme/api/get-token') throw new Error('Unexpected provider call');
     providerCalls++;
     const form = new URLSearchParams(init.body);
     assert.equal(form.get('test_mode'),'1');
-    assert.equal(form.get('payment_amount'),'1000');
+    assert.equal(form.get('payment_amount'),linked?'115000':'1000');
+    assert.equal(form.get('email'),'paytr@example.invalid');
     assert.equal(form.get('no_installment'),'1');
     assert.equal(form.get('merchant_oid'),reference);
-    assert.deepEqual(JSON.parse(Buffer.from(form.get('user_basket'),'base64').toString('utf8')),[['NFCHane test kartı','10.00',1]]);
+    assert.deepEqual(JSON.parse(Buffer.from(form.get('user_basket'),'base64').toString('utf8')),linked?[['NFCHane google · dynamic','400.00',2],['NFCHane iban · static','350.00',1]]:[['NFCHane test kartı','10.00',1]]);
     const fieldNames = ['merchant_id','user_ip','merchant_oid','email','payment_amount','user_basket','no_installment','max_installment','currency','test_mode'];
     const expected = createHmac('sha256','fixture-key')
       .update(fieldNames.map(name=>form.get(name)).join('')+env.PAYTR_MERCHANT_SALT).digest('base64');
@@ -101,6 +107,26 @@ test('admin guest fixture sends a signed test-mode token request and processes c
   assert.equal(final.iframeUrl,null);
   assert.equal((await f.admin('/api/orders',{})).status,423);
   assert.equal((await f.admin('/api/payments',{})).status,423);
+});
+
+test('stored guest order selections use storefront pricing and the same reference across sessions and retries',async()=>{
+  const path='/api/admin/paytr-test/start', f=fixture({linked:true});
+  const data={orderId:f.requestKey,amountMinor:1,items:[],quote:{totalMinor:1}};
+  const results=await Promise.all([f.admin(path,data),f.admin(path,{...data,requestKey:crypto.randomUUID()})]);
+  for(const result of results) assert.equal(result.status,200);
+  assert.equal(f.providerCalls(),1);
+  assert.equal((await f.callback({amount:'1000'})).status,400);
+  for(let i=0;i<2;i++) assert.equal(await (await f.callback({amount:'115000'})).text(),'OK');
+  const saved=await (await f.admin(path,data)).json();
+  assert.equal(saved.amountMinor,115000);
+  assert.equal(saved.status,'success');
+  assert.equal(saved.iframeUrl,null);
+  assert.equal(f.providerCalls(),1);
+  for(const options of [{isTest:false},{orderStatus:'cancelled'}]){
+    const denied=fixture({linked:true,...options});
+    assert.equal((await denied.admin(path,data)).status,409);
+    assert.equal(denied.providerCalls(),0);
+  }
 });
 
 test('failed gateway payment is final and token-provider errors do not expose provider details',async()=>{

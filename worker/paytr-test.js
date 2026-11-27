@@ -1,10 +1,12 @@
 import {authenticatePaytrNotification, matchPaytrNotification} from './paytr-notification.js';
 
+import { cardUnitMinor } from '../src/card-pricing.js';
+
 const encoder = new TextEncoder();
 const base64 = bytes => btoa(String.fromCharCode(...bytes));
-const referencePattern = /^NFCT[0-9a-f]{32}$/;
+const referencePattern = /^NFC[TO][0-9a-f]{32}$/;
 const tokenPattern = /^[A-Za-z0-9._~-]{8,256}$/;
-const amountMinor = 1000;
+const sampleQuote = {totalMinor:1000,basket:[['NFCHane test kartı','10.00',1]]};
 const frameLifetime = 30 * 60 * 1000;
 const retention = 30 * 24 * 60 * 60 * 1000;
 
@@ -19,6 +21,32 @@ export class PaytrTestError extends Error {
   }
 }
 
+// Only persisted test-order selections enter the quote. Customer fields never go to the gateway.
+export function testOrderQuote(detail, orderId) {
+  const order = detail?.order;
+  if (order?.id !== orderId || order.is_test !== true || order.status !== 'awaiting_payment' ||
+      !(Date.parse(order.created_at) > Date.now() - retention)) {
+    throw new PaytrTestError(409,'Ödeme bekleyen, son 30 günde oluşturulmuş bir test siparişi seçin.');
+  }
+  if (!Array.isArray(detail.items) || !detail.items.length || detail.items.length > 30) {
+    throw new PaytrTestError(409,'Test sepeti hesaplanamadı.');
+  }
+  let totalMinor = 0;
+  const basket = detail.items.map(item => {
+    if (!['google','instagram','whatsapp','menu','web','iban','ilan'].includes(item.product_id)
+        || !['qr','nfc','hybrid'].includes(item.connection_method) || !['static','dynamic'].includes(item.link_type)
+        || (item.connection_method === 'nfc' && item.link_type === 'dynamic')
+        || (item.product_id === 'menu' && !['link','pdf'].includes(item.menu_service))
+        || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 1000) {
+      throw new PaytrTestError(409,'Kart seçimi veya ayrıca teklif gerektiren hizmet test tutarına uygun değil.');
+    }
+    const unit = cardUnitMinor({connection:item.connection_method,linkType:item.link_type});
+    totalMinor += unit * item.quantity;
+    return [`NFCHane ${item.product_id} · ${item.link_type}`,(unit / 100).toFixed(2),item.quantity];
+  });
+  return {totalMinor,basket};
+}
+
 const keys = env => ({key:env.PAYTR_MERCHANT_KEY,salt:env.PAYTR_MERCHANT_SALT});
 
 export async function paytrTestToken(attempt, env, ip, fetcher) {
@@ -26,7 +54,7 @@ export async function paytrTestToken(attempt, env, ip, fetcher) {
   const form = new URLSearchParams({
     merchant_id:env.PAYTR_MERCHANT_ID,user_ip:ip,merchant_oid:attempt.reference,email:env.PAYTR_TEST_BUYER_EMAIL,
     payment_amount:String(attempt.amountMinor),
-    user_basket:base64(encoder.encode(JSON.stringify([['NFCHane test kartı',(attempt.amountMinor / 100).toFixed(2),1]]))),
+    user_basket:base64(encoder.encode(JSON.stringify(attempt.basket))),
     no_installment:'1',max_installment:'0',currency:'TL',test_mode:'1',debug_on:'0',lang:'tr',
     user_name:'NFCHane Test Misafir',user_address:'NFCHane test adresi, Sakarya, Türkiye',user_phone:'05000000000',
     merchant_ok_url:returnUrl,merchant_fail_url:returnUrl,timeout_limit:'30',
@@ -77,14 +105,14 @@ function view(attempt) {
     iframeUrl:!expired && status === 'pending' ? 'https://www.paytr.com/odeme/guvenli/'+encodeURIComponent(frameToken) : null};
 }
 
-export async function startPaytrTest(env, {requestKey,owner,ip}, fetcher) {
+export async function startPaytrTest(env, {requestKey,owner,ip,orderId=null,quote=sampleQuote}, fetcher) {
   if (!/^[0-9a-f-]{36}$/.test(requestKey)) throw new PaytrTestError(400,'Geçersiz test kimliği.');
   if (!ip) throw new PaytrTestError(400,'Test bağlantısı adresi doğrulanamadı.');
-  const reference = 'NFCT'+requestKey.replaceAll('-','');
-  const {created,attempt} = await attemptRequest(env,reference,'reserve',{reference,owner});
+  const reference = (orderId ? 'NFCO' : 'NFCT') + (orderId || requestKey).replaceAll('-','');
+  const {created,attempt} = await attemptRequest(env,reference,'reserve',{reference,owner,orderId,quote});
   if (!created) return view(attempt);
   try {
-    const token = await paytrTestToken({reference,amountMinor:attempt.totalMinor},env,ip,fetcher);
+    const token = await paytrTestToken({reference,amountMinor:attempt.totalMinor,basket:attempt.basket},env,ip,fetcher);
     const updated = await attemptRequest(env,reference,'open',{owner,token});
     return view(updated.attempt);
   } catch (error) {
@@ -124,7 +152,7 @@ export async function acceptPaytrTestNotification(request, env) {
   return (await attemptRequest(env,fields.merchant_oid,'notification',{fields})).accepted;
 }
 
-// Each object owns exactly one test reference. There is no link to fulfilment, sales or customer data.
+// Each object owns exactly one test reference. A linked reference records only the test order ID, priced basket and test payment state.
 export class PaytrTestAttempt {
   constructor(ctx) { this.ctx = ctx; }
 
@@ -146,7 +174,7 @@ export class PaytrTestAttempt {
       }
       if (attempt && attempt.owner !== data.owner) return Response.json({attempt:null});
       if (action === 'reserve' && !attempt) {
-        attempt = {reference:data.reference,owner:data.owner,totalMinor:amountMinor,status:'creating',createdAt:Date.now()};
+        attempt = {reference:data.reference,owner:data.owner,orderId:data.orderId,totalMinor:data.quote.totalMinor,basket:data.quote.basket,status:'creating',createdAt:Date.now()};
         await storage.setAlarm(attempt.createdAt + retention);
         await storage.put('attempt',attempt);
         return Response.json({created:true,attempt});
