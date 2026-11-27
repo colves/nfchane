@@ -12,3 +12,13 @@ dl.prep-summary dd{margin:2px 0 0;color:var(--muted)}
 
 .prep-paytr-status{margin-block:16px;font-size:14px;overflow-wrap:anywhere}
 .prep-paytr-frame iframe{display:block;width:100%;height:75vh;min-height:570px;border:1px solid var(--line);border-radius:10px}
+
+.prep-form .prep-billing-type{margin:0 0 16px}
+.prep-form .prep-billing-type legend{font-size:13px;font-weight:700;letter-spacing:normal;margin-bottom:8px}
+.prep-billing-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.prep-billing-option{display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 13px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
+.prep-billing-option:has(input:checked){border-color:var(--green);background:var(--mint);box-shadow:inset 0 0 0 1px var(--green)}
+.prep-page .prep-billing-option input[type=radio]{width:18px;height:18px;min-height:0;margin:0;padding:0;flex:none;accent-color:var(--green)}
+@media(min-width:801px){
+  .prep-order-summary{position:sticky;top:100px;max-height:calc(100dvh - 116px);overflow-y:auto}
+}
