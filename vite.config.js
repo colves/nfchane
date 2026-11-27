@@ -8,7 +8,12 @@ import { infoPageFromPath } from './src/info-pages.js';
 import { infoHtml } from './scripts/info-html.mjs';
 import {canonicalHtml} from './scripts/site-meta.mjs';
 export default defineConfig({
-  build: { rollupOptions: { input: {
+  build: {
+    // Serve every font from this origin, including subsets smaller than Vite's inline threshold.
+    assetsInlineLimit(filePath) {
+      if (filePath.endsWith('.woff2')) return false;
+    },
+    rollupOptions: { input: {
     main: fileURLToPath(new URL('./index.html', import.meta.url)),
     account: fileURLToPath(new URL('./ornek/iban/index.html', import.meta.url)),
     info: fileURLToPath(new URL('./bilgi/index.html', import.meta.url)),
