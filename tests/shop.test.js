@@ -1,3 +1,4 @@
+import { cardUnitMinor,cardSubtotalMinor,dynamicQrChangeLimit } from '../src/card-pricing.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { products, makeSelection, addToCart, changeQuantity, requiresQuote, isSafeUrl, connectionNote } from '../src/shop.js';
@@ -22,6 +23,14 @@ test('preview catalog never exposes a buyable or invented price', () => {
   assert.equal(products.length, 7);
   assert.ok(products.every(p => p.price === null));
   assert.ok(products.every(p => !['wifi', 'kartvizit'].includes(p.id)));
+});
+test('approved card prices apply the dynamic QR surcharge per physical card', () => {
+  const fixed=makeSelection('google',{connection:'nfc',linkType:'dynamic',quantity:1});
+  const dynamic=makeSelection('google',{connection:'hybrid',linkType:'dynamic',quantity:2});
+  assert.equal(cardUnitMinor(fixed),35000);
+  assert.equal(cardUnitMinor(dynamic),40000);
+  assert.equal(cardSubtotalMinor([fixed,dynamic]),115000);
+  assert.equal(dynamicQrChangeLimit,3);
 });
 test('different connection types remain separate cart lines; identical choices merge', () => {
   const first = makeSelection('google', { connection: 'hybrid', linkType: 'dynamic', quantity: 2 });

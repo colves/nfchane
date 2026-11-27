@@ -1,5 +1,6 @@
 import catalogSnapshot from './catalog-snapshot.json' with { type: 'json' };
 import { applyCatalogSnapshot } from './catalog-bridge.js';
+import { dynamicQrChangeLimit } from './card-pricing.js';
 
 export const products = [
   { id: 'google', name: 'Google Yorum Kartı', category: 'yorum', label: 'Google', headline: 'Deneyiminizi paylaşın.', subtitle: 'Yorum bırakmak bir dokunuş uzakta.', description: 'Müşterilerinizi işletmenizin Google yorum sayfasına ulaştırın.', tone: 'google', price: null, symbol: 'G' },
@@ -12,11 +13,11 @@ export const products = [
 ];
 applyCatalogSnapshot(products, catalogSnapshot);
 export const connectionLabels = { hybrid: 'QR + NFC', nfc: 'Yalnız NFC', qr: 'Yalnız QR' };
-export const linkLabels = { static: 'Sabit bağlantı', dynamic: 'Değiştirilebilir bağlantı' };
+export const linkLabels = { static: 'Sabit bağlantı', dynamic: 'Dinamik QR' };
 export function connectionNote(connection, linkType) {
   if (connection === 'nfc') return 'Yalnız NFC seçeneğinde sabit bağlantı kullanılır; bağlantı türü seçimi kapalıdır. Kilitlenmemiş NFC, karta fiziksel erişimle yeniden yazılabilir.';
-  if (linkType === 'dynamic') return 'Kart değişmeden hedefi talebinizle güncelleriz. Hizmet süresi ve koşulları satış öncesinde açıklanacak.';
-  return 'Basılı QR kodunun hedefi sonradan değiştirilemez. Değişiklik ihtiyacınız varsa değiştirilebilir bağlantıyı seçin.';
+  if (linkType === 'dynamic') return `Kart değişmeden QR hedefini talebinizle en fazla ${dynamicQrChangeLimit} kez güncelleriz. Değişiklik için WhatsApp’tan iletişime geçin.`;
+  return 'Basılı QR kodunun hedefi sonradan değiştirilemez. Değişiklik ihtiyacınız varsa Dinamik QR seçin.';
 }
 export const menuLabels = { link: 'Hazır menü bağlantım var', pdf: 'Hazır PDF menüm var', 'design-pdf': 'PDF menü hazırlatmak istiyorum', 'design-web': 'Web menüsü hazırlatmak istiyorum' };
 export const sizeLabels = { '10x10': '10 × 10 cm' };

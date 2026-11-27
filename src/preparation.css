@@ -22,3 +22,7 @@ dl.prep-summary dd{margin:2px 0 0;color:var(--muted)}
 @media(min-width:801px){
   .prep-order-summary{position:sticky;top:100px;max-height:calc(100dvh - 116px);overflow-y:auto}
 }
+
+.prep-fields>.full{grid-column:1/-1}
+.prep-nfc-lock{margin:0;align-items:flex-start}
+.prep-nfc-lock small{display:block;margin-top:4px;color:var(--muted)}

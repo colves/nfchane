@@ -1,3 +1,5 @@
+import {dynamicQrChangeLimit} from '../src/card-pricing.js';
+
 export class InputError extends Error {}
 const fail = message => { throw new InputError(message); };
 const ids = ['google','instagram','whatsapp','menu','web','iban','ilan'];
@@ -81,6 +83,10 @@ export function validateOrder(input) {
     if(item.productId==='menu'&&!menus.includes(menuService)) fail('Menü hizmetini seçin.');
     const p=object(item.personalization)?item.personalization:{};
     const personalization={businessName:text(p.businessName,'İşletme adı',150),notes:text(p.notes,'Tasarım notu',1500,false)};
+    if(p.lockNfc!=null && typeof p.lockNfc!=='boolean') fail('NFC kilitleme tercihini kontrol edin.');
+    if(item.connection==='qr' && p.lockNfc===true) fail('Yalnız QR kartta NFC kilidi seçilemez.');
+    if(p.lockNfc===true) personalization.lockNfc=true;
+    if(item.linkType==='dynamic') personalization.qrChangeLimit=dynamicQrChangeLimit;
     if(item.productId==='iban') { personalization.accountHolder=text(p.accountHolder,'Hesap sahibi',150); personalization.iban=validIban(p.iban); }
     else if(item.productId==='menu'&&menuService!=='link') {
       personalization.targetUrl=safeUrl(p.targetUrl,false);

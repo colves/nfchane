@@ -25,3 +25,18 @@ test('prices use integer cents and product edits cannot inject markup',()=>{
   assert.throws(()=>validateProduct({name:'<script>',description:'Test',price_minor:null}));
   assert.throws(()=>validateFulfilment({trackingNumber:'123'}));
 });
+
+test('NFC lock is optional and a dynamic QR order uses the server limit',()=>{
+  const input=orderFixture();
+  const line=input.items[0];
+  line.linkType='dynamic';
+  line.personalization.lockNfc=true;
+  line.personalization.qrChangeLimit=99;
+  const data=validateOrder(input).items[0].personalization;
+  assert.equal(data.lockNfc,true);
+  assert.equal(data.qrChangeLimit,3);
+  line.connection='qr';
+  assert.throws(()=>validateOrder(input),/NFC kilidi/);
+  delete line.personalization.lockNfc;
+  assert.equal(validateOrder(input).items[0].personalization.lockNfc,undefined);
+});

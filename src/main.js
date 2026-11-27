@@ -16,6 +16,7 @@ import { animateFeedback, revealFeedback } from './interaction-feedback.js';
 import { googleCardImage } from './google-card-assets.js';
 import { productPages, productPath, productIdFromPath } from './product-pages.js';
 import { products, makeSelection, addToCart, changeQuantity, requiresQuote, connectionLabels, linkLabels, menuLabels, connectionNote, sizeLabels, materialLabels, contactUrl, restoreCart, describeSelection } from './shop.js';
+import { cardUnitMinor, cardSubtotalMinor, formatCardPrice } from './card-pricing.js';
 import { emitPreviewEvent } from './storefront-events.js';
 
 // Browsers can inherit a bare fragment from an old QR URL after a redirect.
@@ -92,7 +93,10 @@ function openProduct(id, updateHash = true) {
       button.setAttribute('aria-pressed', String(button.dataset.googleMaterial === values.get('material') && button.dataset.googleConnection === values.get('connection')));
     });
     document.querySelector('#connection-summary').textContent = `${connectionLabels[values.get('connection')]} · ${linkLabels[values.get('linkType')]}`;
-    document.querySelector('#link-type-note').textContent = connectionNote(values.get('connection'), values.get('linkType'));
+    const connection = values.get('connection'), linkType = values.get('linkType');
+    document.querySelector('#link-type-note').textContent = connectionNote(connection, linkType);
+    document.querySelector('#dynamic-qr-contact').hidden = linkType !== 'dynamic';
+    document.querySelector('.detail-price').textContent = `${formatCardPrice(cardUnitMinor({connection,linkType}))} / kart`;
     document.querySelector('.detail-caption').textContent = 'Örnek ürün görseli · Görsel ölçeği temsilidir.';
     document.querySelector('[data-selected-size]').textContent = sizeLabels[values.get('size')];
     const quantity = Number(values.get('quantity'));
@@ -164,8 +168,8 @@ function renderCart() {
   }
   content.innerHTML = `<p class="cart-preview-note">Bu bir önizleme sepetidir; sipariş veya ödeme oluşturmaz.</p><div class="cart-items">${cart.map(item => {
     const p = products.find(p => p.id === item.productId);
-    return `<article class="cart-item"><div class="cart-thumb cart-product-photo">${cardMockup(p, { connection: item.connection, material: item.material, placement: 'cart' })}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">Fiyat henüz girilmedi</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div></div></article>`;
-  }).join('')}</div><div class="cart-summary"><div><span>Ürün toplamı</span><strong>Fiyat henüz girilmedi</strong></div><div><span>Kargo</span><span>Henüz belirlenmedi</span></div><p>Fiyatlar, kargo ve toplu alım koşulları satış açılmadan önce açıklanacaktır.</p><a class="button outline" href="${homeBase}hesabim/?devam=siparis">Sipariş hazırlığına devam et</a><button class="button disabled-purchase" disabled>Satın al · Satış henüz açık değil ${icon('shield')}</button></div><button class="button outline continue-shopping" data-close>Ürünleri incelemeye devam et</button>`;
+    return `<article class="cart-item"><div class="cart-thumb cart-product-photo">${cardMockup(p, { connection: item.connection, material: item.material, placement: 'cart' })}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">${formatCardPrice(cardUnitMinor(item)*item.quantity)}</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div></div></article>`;
+  }).join('')}</div><div class="cart-summary"><div><span>Ürün toplamı</span><strong>${formatCardPrice(cardSubtotalMinor(cart))}</strong></div><div><span>Kargo</span><span>Henüz belirlenmedi</span></div><p>Kargo ve toplu alım koşulları satış açılmadan önce açıklanacaktır.</p><a class="button outline" href="${homeBase}hesabim/?devam=siparis">Sipariş hazırlığına devam et</a><button class="button disabled-purchase" disabled>Satın al · Satış henüz açık değil ${icon('shield')}</button></div><button class="button outline continue-shopping" data-close>Ürünleri incelemeye devam et</button>`;
   content.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => { cart = cart.filter(item => item.key !== button.dataset.remove); renderCart(); notify('Ürün sepetten kaldırıldı.'); }));
   content.querySelectorAll('[data-cart-quantity]').forEach(input => input.addEventListener('change', () => {
     try { cart = changeQuantity(cart, input.dataset.cartQuantity, Number(input.value)); renderCart(); }
