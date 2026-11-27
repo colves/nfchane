@@ -16,7 +16,7 @@ export const connectionLabels = { hybrid: 'QR + NFC', nfc: 'Yalnız NFC', qr: 'Y
 export const linkLabels = { static: 'Sabit bağlantı', dynamic: 'Dinamik QR' };
 export function connectionNote(connection, linkType) {
   if (connection === 'nfc') return 'Yalnız NFC seçeneğinde sabit bağlantı kullanılır; bağlantı türü seçimi kapalıdır. Kilitlenmemiş NFC, karta fiziksel erişimle yeniden yazılabilir. Size özel baskılı kartta cayma hakkı istisnası uygulanır.';
-  if (linkType === 'dynamic') return `Kart değişmeden QR hedefini talebinizle en fazla ${dynamicQrChangeLimit} kez güncelleriz. Değişiklik için WhatsApp’tan iletişime geçin. Dinamik kartı teslimden itibaren 14 gün içinde iade edebilirsiniz.`;
+  if (linkType === 'dynamic') return `Kart değişmeden QR hedefini talebinizle en fazla ${dynamicQrChangeLimit} kez güncelleriz. Değişiklik için WhatsApp’tan iletişime geçin.`;
   return 'Basılı QR kodunun hedefi sonradan değiştirilemez. Değişiklik ihtiyacınız varsa Dinamik QR seçin. Size özel baskılı kartta cayma hakkı istisnası uygulanır.';
 }
 export const menuLabels = { link: 'Hazır menü bağlantım var', pdf: 'Hazır PDF menüm var', 'design-pdf': 'PDF menü hazırlatmak istiyorum', 'design-web': 'Web menüsü hazırlatmak istiyorum' };
