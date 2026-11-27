@@ -97,9 +97,11 @@ export function validateOrder(input) {
     if(seen.has(key)) fail('Aynı seçenekleri tek satırda birleştirin.'); seen.add(key);
     return {productId:item.productId,sizeCm:item.sizeCm,material:'clear',connection:item.connection,linkType:item.linkType,quantity:item.quantity,menuService,personalization};
   });
+  if (input.preInformationConfirmed !== true) fail('Ön bilgilendirme formunu okuduğunuzu teyit edin.');
+  if (input.distanceContractAccepted !== true) fail('Test işlemi için mesafeli satış sözleşmesini onaylayın.');
   if(input.confirmTest!==true) fail('Bunun gerçek satış olmayan test kaydı olduğunu onaylayın.');
   const accountMode=input.accountMode||'guest';if(!['guest','member'].includes(accountMode))fail('Hesap tercihini kontrol edin.');
-  return {requestKey,contact,address,billing,items,accountMode,confirmTest:true};
+  return {requestKey,contact,address,billing,items,accountMode,preInformationConfirmed:true,distanceContractAccepted:true,confirmTest:true};
 }
 export function validateFulfilment(input) {
   if(!object(input)) fail('Kargo/fatura bilgileri geçersiz.');

@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {validateOrder,validateProduct,validIban,priceMinor,validateFulfilment} from '../worker/validation.js';
-export const orderFixture=()=>({requestKey:'69ed535f-aad3-4f36-9f23-70a9ca4b2581',contact:{name:'Hazırlık Testi',email:'test@example.invalid',phone:'05551234567'},address:{recipient:'Hazırlık Testi',line1:'Test adresi',city:'Sakarya',district:'Serdivan',postcode:'54000',country:'TR'},billing:{type:'individual'},items:[{productId:'google',sizeCm:10,material:'clear',connection:'hybrid',linkType:'static',quantity:1,personalization:{businessName:'Örnek İşletme',targetUrl:'https://example.org/yorum',notes:''}}],confirmTest:true});
+export const orderFixture=()=>({requestKey:'69ed535f-aad3-4f36-9f23-70a9ca4b2581',contact:{name:'Hazırlık Testi',email:'test@example.invalid',phone:'05551234567'},address:{recipient:'Hazırlık Testi',line1:'Test adresi',city:'Sakarya',district:'Serdivan',postcode:'54000',country:'TR'},billing:{type:'individual'},items:[{productId:'google',sizeCm:10,material:'clear',connection:'hybrid',linkType:'static',quantity:1,personalization:{businessName:'Örnek İşletme',targetUrl:'https://example.org/yorum',notes:''}}],preInformationConfirmed:true,distanceContractAccepted:true,confirmTest:true});
 test('complete guest form is normalized without accepting client totals or identity roles',()=>{
   const input=orderFixture();input.totalMinor=1;input.is_test=false;input.contact.role='owner';input.items[0].unit_price_minor=1;
   const result=validateOrder(input);
   assert.equal(result.contact.phone,'905551234567');assert.equal(result.contact.role,undefined);assert.equal(result.totalMinor,undefined);assert.equal(result.is_test,undefined);assert.equal(result.items[0].unit_price_minor,undefined);
 });
 test('invalid destination, contact, retired size, NFC dynamic and missing personalization are rejected',()=>{
-  for(const mutate of [p=>p.address.country='DE',p=>p.address.country=null,p=>p.address.postcode='bad',p=>p.contact.phone='123',p=>p.contact.email='bad',p=>p.items[0].sizeCm=12,p=>{p.items[0].connection='nfc';p.items[0].linkType='dynamic';},p=>p.items[0].personalization.businessName='',p=>p.items[0].personalization.targetUrl='javascript:alert(1)',p=>p.items[0].quantity=0,p=>p.confirmTest=false]) {const input=orderFixture();mutate(input);assert.throws(()=>validateOrder(input));}
+  for(const mutate of [p=>p.address.country='DE',p=>p.address.country=null,p=>p.address.postcode='bad',p=>p.contact.phone='123',p=>p.contact.email='bad',p=>p.items[0].sizeCm=12,p=>{p.items[0].connection='nfc';p.items[0].linkType='dynamic';},p=>p.items[0].personalization.businessName='',p=>p.items[0].personalization.targetUrl='javascript:alert(1)',p=>p.items[0].quantity=0,p=>delete p.preInformationConfirmed,p=>p.distanceContractAccepted=false,p=>p.confirmTest=false]) {const input=orderFixture();mutate(input);assert.throws(()=>validateOrder(input));}
 });
 test('company, IBAN and menu orders require their own information',()=>{
   const corporate=orderFixture();corporate.billing={type:'company'};assert.throws(()=>validateOrder(corporate));
