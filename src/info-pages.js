@@ -2,6 +2,7 @@
 const returnTerms = [
   ['Sabit bağlantılı, özel baskılı kartlar', 'Bu kartları siparişte verdiğiniz bağlantı veya tasarıma göre özel olarak basarız. Bu şekilde hazırlanan kartlarda Mesafeli Sözleşmeler Yönetmeliği’nin 15/1-b maddesi uyarınca cayma hakkı istisnası uygulanır.'],
   ['Dinamik kartlarda cayma hakkı', 'Dinamik kart için teslimden önce veya kartı sizin ya da belirlediğiniz kişinin teslim aldığı tarihten itibaren 14 gün içinde, gerekçe göstermeden ve cezai şart ödemeden cayabilirsiniz. Karma siparişlerde her karta kendi koşulu uygulanır.'],
+  ['Dinamik kartın geri gönderimi', 'Tüketici olarak cayma bildiriminizi ilettikten sonra kartı 14 gün içinde geri gönderin. Ön bilgilendirmede belirtilen taşıyıcıyla yapılan iadede gönderim masrafını satıcı karşılar. İade için taşıyıcı belirtilmemişse seçtiğiniz kargoyla gönderimin masrafı da size ait değildir.'],
   ['Ayıplı ürünler', 'Her iki modelde de ayıplı mala ilişkin yasal haklarınız saklıdır. Doğru ilettiğiniz bağlantının yanlış basılması, teslimde kırık pleksi veya vaat edildiği gibi çalışmayan NFC buna örnektir. Kanundaki koşullara göre sözleşmeden dönme, bedelde indirim, ücretsiz onarım veya ayıpsız ürünle değişim talep edebilirsiniz.'],
 ];
 
@@ -66,7 +67,8 @@ export const infoPages = {
     intro: 'Kargo ve üretim koşulları hazırlanıyor. Şu anda sipariş veya ödeme alınmıyor.',
     sections: [
       ['Gönderim kapsamı', 'Başlangıçta yalnızca Türkiye’ye gönderim planlanıyor. Gönderiler Sakarya veya Kütahya’dan çıkabilir.'],
-      ['Kargo ücreti ve teslim süresi', 'Kargo firması, ücret ve hazırlık süresi henüz belirlenmedi. Bu bilgiler satış başlamadan önce açıklanacak; kargo bedeli ödeme öncesinde gösterilecek. Şu an ücretsiz kargo veya belirli bir teslim günü taahhüdü yok.'],
+      ['Kargo ücreti ve teslim süresi', 'Kargo firması, ücret ve hazırlık süresi henüz belirlenmedi. Kartın baskı ve hazırlık süresi ile kargoya verildikten sonraki tahmini taşıma süresi ayrı belirtilecek. Kargo bedelini ve ödenecek toplamı sipariş onayından önce göreceksiniz. Şu an ücretsiz kargo veya belirli bir teslim günü taahhüdü yok.'],
+      ['Kartla ödeme', 'Mağaza şu anda önizlemededir. Satış açıldığında kartla tek çekim ödeme için PayTR kullanılması planlanıyor. Kart bilgilerinizi yalnız ödeme ekranına girin. Sipariş notuna veya WhatsApp mesajına kart numarası ya da güvenlik kodu yazmayın.'],
       ['Size özel tasarım', 'Kişiselleştirme gerektiren ürünlerde son tasarımın üretimden önce onayınıza sunulması planlanıyor. Tasarım hazırlığı ile kargo süresi ayrı ayrı belirtilecek.'],
       ...returnTerms,
     ],
@@ -81,12 +83,15 @@ export const infoPages = {
     ],
   },
   kvkk: {
-    title: 'KVKK aydınlatma metni', label: 'Veri işleme süreçleri netleşiyor.', legal: true,
-    intro: 'Veri sorumlusuna ve gerçek işleyişe özel aydınlatma metni hazırlanacak. Şu an onaylanmış bir hukuki metin yayımlanmıyor.',
+    title: 'KVKK aydınlatma metni', label: 'İletişim, kişiselleştirme ve siparişlerde kullanılan bilgiler.', legal: true,
+    intro: 'Bu taslak, bugün açık olan iletişim kanalını ve satış açıldığında sipariş için kullanılacak bilgileri açıklar.',
     sections: [
       ['Veri sorumlusu', 'İşletmenin ticari unvanı, adresi ve kişisel veri başvuru kanalı henüz bu sayfaya eklenmedi.'],
-      ['Açıklanacak süreçler', 'Üyelik, iletişim, sipariş, teslimat ve faturalandırma için işlenen veri kategorileri, amaçlar, hukuki sebepler, toplama yöntemleri ve alıcı grupları gerçek sisteme göre belirtilecek.'],
-      ['Danışman onayı gereken alanlar', 'İlgili kişi hakları ve başvuru yöntemi, saklama ve silme kuralları ile yurt dışı hizmet sağlayıcılarının kullanımı hukuk danışmanıyla değerlendirilecek.'],
+      ['Sorularınız ve destek talepleriniz', 'WhatsApp üzerinden bize yazdığınızda telefon numaranız, profilinizde görünen adınız ve mesajda paylaşmayı seçtiğiniz bilgiler bize ulaşır. Ürün veya teklif talebinizi yanıtlamak için gereken bilgiler, sözleşmenin kurulmasıyla doğrudan ilgili olduğu ölçüde KVKK madde 5/2-c kapsamında işlenir.'],
+      ['Sipariş ve kişiselleştirme', 'Satış açıldığında sipariş formundan alınan ad, iletişim bilgileri, adres, ürün seçimi ve baskı içeriği kartı hazırlamak ve teslim etmek için kullanılır (KVKK madde 5/2-c). IBAN kartında kart üzerine yansıtılmasını istediğiniz hesap sahibi adı ve IBAN da kişiselleştirme içeriğidir. Basılan veya bağlantıyla açılan bilgileri kartı okutan kişiler görebilir.'],
+      ['Ödeme, fatura ve başvurular', 'Ödeme sonucunu siparişle eşleştirmek için işlem referansı ve tutar kullanılır. Fatura için gereken kimlik, adres ve vergi bilgileri yasal yükümlülüklerin yerine getirilmesi amacıyla işlenir (madde 5/2-ç). Bir talebin veya uyuşmazlığın belgelenmesi için gereken kayıtlar bir hakkın kurulması, kullanılması veya korunması amacıyla işlenebilir (madde 5/2-e).'],
+      ['Bilgiler kimlere ulaşır?', 'Planlanan satış sürecinde baskı hizmetini veren işletmeye basılacak içerik, taşıyıcıya teslimat ve iletişim bilgileri, ödeme kuruluşuna işlem için gereken bilgiler, muhasebe hizmeti verene fatura bilgileri iletilir. Site ve veri tabanı altyapısında Cloudflare ve Supabase kullanılır. Yurt dışına aktarımın kapsamı ve hukuki dayanağı nihai metinde açıklanacaktır.'],
+      ['Haklarınız ve başvuru', 'KVKK madde 11 uyarınca verilerinizin işlenip işlenmediğini, amacını ve yurt içinde veya dışında aktarıldığı kişileri öğrenebilir, yanlış verilerin düzeltilmesini ve kanuni şartlarda silinmesini veya yok edilmesini isteyebilirsiniz. Bu işlemlerin alıcılara bildirilmesini, yalnız otomatik analizden doğan aleyhinize bir sonuca itiraz etmeyi ve hukuka aykırı işleme nedeniyle uğradığınız zararın giderilmesini talep edebilirsiniz. Resmî başvuru adresi doğrulandığında burada yayımlanacaktır.'],
     ],
   },
   cerez: {
@@ -104,9 +109,10 @@ export const infoPages = {
     sections: [
       ['Taraflar ve kapsam', 'Bu koşullar, NFCHane mağazasından tüketici olarak satın aldığınız kartların hazırlanmasını ve teslimini kapsar. NFCHane mağazanın markasıdır. Satıcının resmî unvanı, adresi ve iletişim bilgileri satış açılmadan önce yayımlanacaktır.'],
       ['Ürün, bedel ve ödeme', 'Okutma yöntemi, bağlantı türü, adet ve kişiselleştirme bilgileri sipariş özetinde belirtilir. Vergiler dâhil ürün bedelini, kargo ücretini ve ödenecek toplamı siparişi onaylamadan önce görürsünüz.'],
-      ['Hazırlık ve teslimat', 'Satıcı kartları siparişinizdeki özelliklere göre hazırlar ve bildirilen süre içinde belirttiğiniz adrese teslim eder. Hazırlık ve teslim süreleri satış başladığında ön bilgilendirme formunda yer alır.'],
+      ['İşletme adına alım', 'Bir kafenin masaları için menü kartı alması gibi ticari veya mesleki amaçlı siparişlerde, bu sayfadaki tüketiciye özgü yasal cayma hükümleri kendiliğinden uygulanmaz. İşletme siparişine sunulan iade koşulları siparişten önce ayrıca belirtilir.'],
+      ['Hazırlık ve teslimat', 'Satıcı kartları siparişinizdeki özelliklere göre hazırlar ve bildirilen süre içinde belirttiğiniz adrese teslim eder. Sipariş öncesinde kartın hazırlanıp kargoya verilme süresi ile taşıyıcının tahmini teslim süresi ayrı gösterilir.'],
       ...returnTerms,
-      ['Cayma bildirimi ve geri ödeme', 'Cayma kararınızı süre içinde satıcıya yazılı olarak veya e-posta gibi saklanabilir bir yolla bildirebilirsiniz. Sipariş numaranızı ve hangi kartı iade ettiğinizi belirtmeniz işlemi kolaylaştırır. İade adresi ve taşıyıcı sipariş öncesinde bildirilecektir. Satıcı, cayma kapsamındaki ödemeleri yasal süresinde, kullandığınız ödeme aracına uygun şekilde ve ek ücret almadan iade eder.'],
+      ['Cayma bildirimi ve geri ödeme', 'Cayma kararınızı süre içinde satıcıya yazılı olarak veya e-posta gibi saklanabilir bir yolla bildirebilirsiniz. Sipariş numaranızı ve hangi kartı iade ettiğinizi belirtmeniz işlemi kolaylaştırır. İade adresi ve taşıyıcı sipariş öncesinde bildirilecektir. Geri ödeme süresi, belirtilen taşıyıcıya kartı verdiğiniz gün, farklı bir taşıyıcı kullandıysanız kartın satıcıya ulaştığı gün başlar. Teslimden önce cayarsanız süre bildiriminizle başlar. Cayma kapsamındaki ödemeler, uygulanabilir teslimat giderleriyle birlikte 14 gün içinde kullandığınız ödeme aracına uygun şekilde, tek seferde ve masrafsız iade edilir.'],
       ['Uyuşmazlık başvuruları', 'Uyuşmazlık hâlinde, geçerli parasal sınıra göre yerleşim yerinizdeki veya işlemin yapıldığı yerdeki tüketici hakem heyetine ya da ilgili dava şartları çerçevesinde tüketici mahkemesine başvurabilirsiniz.'],
     ],
   },
