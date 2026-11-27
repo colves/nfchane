@@ -55,3 +55,13 @@
   .page-config { margin-bottom:35px; }.page-config .product-dialog-heading { padding:18px; gap:12px; }.page-config .product-dialog-heading .eyebrow { font-size:8px; }.page-config .product-dialog-heading .text-link { font-size:11px; }.page-config .product-detail-grid { grid-template-columns:1fr; padding:18px; gap:20px; }.page-config .detail-media { position:static; }.page-config .detail-content h2 { font-size:26px; }.page-config .detail-specs { font-size:11px; }.page-config .detail-caption { font-size:11px; }.page-config .detail-description { font-size:13px; }.material-options { grid-template-columns:1fr; }
   .product-page-faq { grid-template-columns:1fr; gap:15px; padding-block:0 35px; }.product-page-faq details>p { font-size:13px; }.related-products { padding-top:30px; }.related-products>div { grid-template-columns:1fr 1fr; gap:0 18px; }.related-products a { font-size:12px; min-height:60px; align-items:center; }.product-page { padding-bottom:40px; }
 }
+
+.other-cards { padding-block: 2rem 4rem; }
+.other-cards h2 { margin: 0 0 1.25rem; }
+.other-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.5rem 1rem; }
+.other-card { display: grid; gap: .6rem; align-content: start; color: inherit; text-decoration: none; }
+.other-card .product-art { border-radius: .75rem; }
+.other-card:hover strong, .other-card:focus-visible strong { text-decoration: underline; }
+@media (max-width: 640px) {
+  .other-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem .75rem; }
+}
