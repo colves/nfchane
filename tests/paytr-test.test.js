@@ -45,7 +45,7 @@ function fixture() {
     if (url.endsWith('/rest/v1/rpc/admin_session')) return Response.json({id:owner,role:'owner'});
     if (url !== 'https://www.paytr.com/odeme/api/get-token') throw new Error('Unexpected provider call');
     providerCalls++;
-    const form = init.body;
+    const form = new URLSearchParams(init.body);
     assert.equal(form.get('test_mode'),'1');
     assert.equal(form.get('payment_amount'),'1000');
     assert.equal(form.get('no_installment'),'1');

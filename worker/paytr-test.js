@@ -37,10 +37,24 @@ export async function paytrTestToken(attempt, env, ip, fetcher) {
   const hmac = await crypto.subtle.importKey('raw',encoder.encode(env.PAYTR_MERCHANT_KEY),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   form.set('paytr_token',base64(new Uint8Array(await crypto.subtle.sign('HMAC',hmac,encoder.encode(message)))));
 
-  const response = await fetcher('https://www.paytr.com/odeme/api/get-token',{
-    method:'POST',body:form,redirect:'error',signal:AbortSignal.timeout(12000),
-  });
-  const result = response.ok ? await response.json() : null;
+  let response;
+  try {
+    response = await fetcher('https://www.paytr.com/odeme/api/get-token',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',Accept:'application/json'},
+      body:form.toString(),redirect:'manual',signal:AbortSignal.timeout(12000),
+    });
+  } catch {
+    throw new PaytrTestError(502,'Worker, PayTR test servisine bağlantı kuramadı.');
+  }
+  if (!response.ok) {
+    throw new PaytrTestError(502,`PayTR test servisi HTTP ${response.status} döndürdü.`);
+  }
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new PaytrTestError(502,'PayTR test servisi JSON yerine beklenmeyen bir yanıt döndürdü.');
+  }
   if (result?.status !== 'success' || typeof result.token !== 'string' || !tokenPattern.test(result.token)) {
     throw new PaytrTestError(502,'PayTR test ekranı açılamadı. Mağaza panelindeki entegrasyon ayarlarını kontrol edin.');
   }
@@ -76,7 +90,7 @@ export async function startPaytrTest(env, {requestKey,owner,ip}, fetcher) {
   } catch (error) {
     await attemptRequest(env,reference,'unavailable',{owner});
     if (error instanceof PaytrTestError) throw error;
-    throw new PaytrTestError(502,'PayTR test servisine ulaşılamadı. Yeni bir test başlatabilirsiniz.');
+    throw new PaytrTestError(502,'PayTR test servisine ulaşılamadı. Test oturumunun imzalanması veya kaydedilmesi tamamlanamadı.');
   }
 }
 
