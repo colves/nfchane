@@ -25,4 +25,10 @@ dl.prep-summary dd{margin:2px 0 0;color:var(--muted)}
 
 .prep-fields>.full{grid-column:1/-1}
 .prep-nfc-lock{margin:0;align-items:flex-start}
+.prep-empty-order { max-width: 640px; }
+.prep-empty-order p { color: var(--muted); max-width: 52ch; }
+.prep-empty-order .button { margin-top: 22px; }
+.prep-order-summary dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.prep-order-summary dl dd { text-align: right; }
+.prep-order-summary #order-items-total { color: var(--ink); font-size: 17px; font-weight: 750; white-space: nowrap; }
 .prep-nfc-lock small{display:block;margin-top:4px;color:var(--muted)}

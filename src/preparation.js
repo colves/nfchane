@@ -2,6 +2,7 @@ import '@fontsource-variable/manrope';
 import './style.css';
 import './readability.css';
 import './preparation.css';
+import './brand.css';
 export const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export async function api(path,{method='GET',data}={}){
   const response=await fetch(path,{method,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},...(data?{body:JSON.stringify(data)}:{})});

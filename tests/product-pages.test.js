@@ -16,6 +16,14 @@ test('only clear material can be selected and retired white cart lines are remov
   assert.throws(()=>makeSelection('google',{material:'wood'}));
 });
 
+test('restoring mixed saved lines preserves valid cards and ignores unavailable options', () => {
+  const fixed = makeSelection('google', { quantity: 2 });
+  const dynamic = makeSelection('instagram', { linkType: 'dynamic' });
+  const saved = [null, fixed, { productId: 'retired' }, { ...fixed, material: 'valueOf' },
+    makeSelection('menu', { menuType: 'design-web' }), dynamic];
+  assert.deepEqual(restoreCart(JSON.stringify(saved)), [fixed, dynamic]);
+});
+
 test('all cards are fixed at 10 cm and retired sizes cannot be ordered', () => {
   assert.deepEqual(sizeLabels,{'10x10':'10 × 10 cm'});
   const cart=addToCart([],makeSelection('iban',{quantity:2}));

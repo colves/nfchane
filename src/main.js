@@ -54,7 +54,7 @@ function renderCatalog() {
   document.querySelector('#catalog-count').textContent = `${shown.length} ürün`;
   document.querySelector('#product-grid').innerHTML = renderCatalogCards(activeFilter);
 }
-function openProduct(id, updateHash = true) {
+function openProduct(id) {
   const p = products.find(p => p.id === id);
   if (!p) return;
   if (!pageProduct) { location.href = productPath(id, homeBase); return; }
@@ -96,9 +96,7 @@ function openProduct(id, updateHash = true) {
     const connection = values.get('connection'), linkType = values.get('linkType');
     document.querySelector('#link-type-note').textContent = connectionNote(connection, linkType);
     document.querySelector('#dynamic-qr-contact').hidden = linkType !== 'dynamic';
-    document.querySelector('.detail-price').textContent = `${formatCardPrice(cardUnitMinor({connection,linkType}))} / kart`;
-    document.querySelector('.detail-caption').textContent = 'Örnek ürün görseli · Görsel ölçeği temsilidir.';
-    document.querySelector('[data-selected-size]').textContent = sizeLabels[values.get('size')];
+    document.querySelector('.detail-price strong').textContent = formatCardPrice(cardUnitMinor({connection,linkType}));
     const quantity = Number(values.get('quantity'));
     summary.textContent = `${sizeLabels[values.get('size')]} · ${materialLabels[values.get('material')]} · ${connectionLabels[values.get('connection')]} · ${linkLabels[values.get('linkType')]} · ${Number.isInteger(quantity) && quantity > 0 && quantity <= 1000 ? `${quantity} adet` : 'Adedi kontrol edin'}`;
     const menuType = values.get('menuType') || 'link';
@@ -136,7 +134,6 @@ function openProduct(id, updateHash = true) {
       const selection = currentSelection();
       if (requiresQuote(selection)) { openContact(`${p.name} · ${menuLabels[selection.menuType]} · ${sizeLabels[selection.size]} · ${materialLabels[selection.material]} · ${connectionLabels[selection.connection]} · ${linkLabels[selection.linkType]} · ${selection.quantity} adet`); return; }
       cart = addToCart(cart, selection);
-      document.querySelector('#cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
       document.querySelector('#selection-error').textContent = '';
       renderCart();
       emitPreviewEvent('cart_add', p.id, selection);
@@ -156,25 +153,60 @@ function openProduct(id, updateHash = true) {
     form.elements.menuType.focus({ preventScroll: true });
   }));
 }
-function renderCart() {
-  saveCart();
+function updateCartCount() {
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   document.querySelector('#cart-count').textContent = count;
   document.querySelector('#cart-title-count').textContent = count ? `(${count})` : '';
+  document.querySelector('.cart-trigger').setAttribute('aria-label', count ? `Sepeti aç, ${count} kart` : 'Sepeti aç');
+}
+function renderCart() {
+  saveCart();
+  updateCartCount();
   const content = document.querySelector('#cart-content');
   if (!cart.length) {
-    content.innerHTML = `<div class="empty-cart"><span>${icon('bag')}</span><h3>İlk kartınızla başlayalım.</h3><p>Henüz bir ürün seçmediniz. Kartları inceleyip seçeneklerinizi burada görebilirsiniz.</p><button class="button primary" data-close>Ürünleri keşfedin ${icon('arrow')}</button></div>`;
+    content.innerHTML = `<div class="empty-cart"><span>${icon('bag')}</span><h3>İlk kartınızla başlayalım.</h3><p>Henüz bir ürün seçmediniz. Kartları inceleyip seçeneklerinizi burada görebilirsiniz.</p><a class="button primary" href="${homeBase}#urunler" data-cart-browse>Kartları incele ${icon('arrow')}</a></div>`;
+    content.querySelector('[data-cart-browse]').addEventListener('click', () => document.querySelector('#cart-dialog').close());
     return;
   }
   content.innerHTML = `<p class="cart-preview-note">Bu bir önizleme sepetidir; sipariş veya ödeme oluşturmaz.</p><div class="cart-items">${cart.map(item => {
     const p = products.find(p => p.id === item.productId);
-    return `<article class="cart-item"><div class="cart-thumb cart-product-photo">${cardMockup(p, { connection: item.connection, material: item.material, placement: 'cart' })}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">${formatCardPrice(cardUnitMinor(item)*item.quantity)}</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div></div></article>`;
-  }).join('')}</div><div class="cart-summary"><div><span>Ürün toplamı</span><strong>${formatCardPrice(cardSubtotalMinor(cart))}</strong></div><div><span>Kargo</span><span>Henüz belirlenmedi</span></div><p>Kargo ve toplu alım koşulları satış açılmadan önce açıklanacaktır.</p><a class="button outline" href="${homeBase}hesabim/?devam=siparis">Sipariş hazırlığına devam et</a><button class="button disabled-purchase" disabled>Satın al · Satış henüz açık değil ${icon('shield')}</button></div><button class="button outline continue-shopping" data-close>Ürünleri incelemeye devam et</button>`;
-  content.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => { cart = cart.filter(item => item.key !== button.dataset.remove); renderCart(); notify('Ürün sepetten kaldırıldı.'); }));
-  content.querySelectorAll('[data-cart-quantity]').forEach(input => input.addEventListener('change', () => {
-    try { cart = changeQuantity(cart, input.dataset.cartQuantity, Number(input.value)); renderCart(); }
-    catch (error) { input.value = cart.find(item => item.key === input.dataset.cartQuantity).quantity; notify(error.message); }
+    return `<article class="cart-item"><div class="cart-thumb cart-product-photo">${cardMockup(p, { connection: item.connection, material: item.material, placement: 'cart' })}</div><div class="cart-item-info"><h3>${p.name}</h3><p>${sizeLabels[item.size]} · ${materialLabels[item.material]}</p><p>${connectionLabels[item.connection]} · ${linkLabels[item.linkType]}</p>${item.menuType ? `<p>${menuLabels[item.menuType]}</p>` : ''}<span class="cart-item-price">${formatCardPrice(cardUnitMinor(item)*item.quantity)}</span><div class="cart-item-actions"><label>Adet <input type="number" min="1" max="1000" step="1" value="${item.quantity}" data-cart-quantity="${item.key}" aria-label="${p.name} adedi"></label><button class="remove-item" data-remove="${item.key}" aria-label="${p.name} sepetten kaldır">${icon('trash')} Kaldır</button></div><p class="cart-line-error" role="status" hidden></p></div></article>`;
+  }).join('')}</div><div class="cart-summary"><div><span>Ürün toplamı</span><strong data-cart-subtotal>${formatCardPrice(cardSubtotalMinor(cart))}</strong></div><div><span>Kargo</span><span>Henüz belirlenmedi</span></div><p>Kargo ve toplu alım koşulları satış açılmadan önce açıklanacaktır.</p><a class="button primary" href="${homeBase}hesabim/?devam=siparis">Sipariş hazırlığına devam et ${icon('arrow')}</a><button class="button disabled-purchase" disabled>Satın al · Satış henüz açık değil ${icon('shield')}</button></div><button class="button outline continue-shopping" data-close>Ürünleri incelemeye devam et</button>`;
+  content.querySelectorAll('[data-remove]').forEach((button, index) => button.addEventListener('click', () => {
+    cart = cart.filter(item => item.key !== button.dataset.remove);
+    renderCart();
+    const buttons = content.querySelectorAll('[data-remove]');
+    (buttons[Math.min(index, buttons.length - 1)] || content.querySelector('[data-cart-browse]')).focus();
+    notify('Ürün sepetten kaldırıldı.');
   }));
+  for (const input of content.querySelectorAll('[data-cart-quantity]')) {
+    const row = input.closest('.cart-item');
+    const error = row.querySelector('.cart-line-error');
+    const update = event => {
+      const key = input.dataset.cartQuantity;
+      const item = cart.find(line => line.key === key);
+      try {
+        cart = changeQuantity(cart, key, input.valueAsNumber);
+        saveCart();
+        updateCartCount();
+        row.querySelector('.cart-item-price').textContent = formatCardPrice(cardUnitMinor(item) * input.valueAsNumber);
+        content.querySelector('[data-cart-subtotal]').textContent = formatCardPrice(cardSubtotalMinor(cart));
+        error.hidden = true;
+        input.removeAttribute('aria-invalid');
+      } catch (reason) {
+        error.hidden = false;
+        error.textContent = reason.message;
+        input.setAttribute('aria-invalid', 'true');
+        if (event.type === 'change') {
+          input.value = item.quantity;
+          input.removeAttribute('aria-invalid');
+          error.textContent += ` Adet ${item.quantity} olarak korundu.`;
+        }
+      }
+    };
+    input.addEventListener('input', update);
+    input.addEventListener('change', update);
+  }
 }
 function openContact(selection = '') {
   document.querySelector('#whatsapp-link').href = contactUrl(selection ? `Merhaba, şu seçim için bilgi ve teklif almak istiyorum: ${selection}` : '');
@@ -185,8 +217,7 @@ function openContact(selection = '') {
 if (!pageProduct) {
 const homePhoto = document.querySelector('.hero-scene');
 homePhoto.classList.add('hero-product-photo');
-homePhoto.setAttribute('aria-label', 'Google yorum kartı ürün önizlemesi');
-if (!homePhoto.querySelector('img')) homePhoto.innerHTML = `<figure>${googleCardImage('hybrid', 'clear', './', { placement: 'hero', priority: true })}<figcaption>Google yorum kartı <span>QR + NFC · Şeffaf pleksi</span></figcaption></figure>`;
+if (!homePhoto.querySelector('img')) homePhoto.innerHTML = `<figure>${googleCardImage('hybrid', 'clear', './', { placement: 'hero', priority: true })}<figcaption>Google Yorum Kartı <span>Kartı incele →</span></figcaption></figure>`;
 if (!document.querySelector('#product-grid').children.length) renderCatalog();
 document.querySelector('#baglanti').insertAdjacentHTML('beforeend', `<div class="connection-demo"><div class="demo-intro"><span class="eyebrow">KÜÇÜK BİR ÖRNEK</span><h3>Kart aynı. Hedef farklı.</h3><p>Bir hedef seçerek değiştirilebilir bağlantının mantığını görün.</p></div><div class="demo-route"><div class="demo-source">${icon('qr')}<span>Kartınızdaki<br><strong>sabit adres</strong></span></div><span class="demo-arrow">${icon('arrow')}</span><div id="demo-destination" class="demo-destination" role="status">${icon('globe')}<span>Google<br><strong>Yorum sayfanız</strong></span></div></div><div class="demo-buttons" role="group" aria-label="Örnek bağlantı hedefi"><button class="active" data-demo-target="google" aria-pressed="true">Google yorum</button><button data-demo-target="instagram" aria-pressed="false">Instagram</button><button data-demo-target="menu" aria-pressed="false">Dijital menü</button></div><p class="demo-footnote">Etkileşimli anlatım örneğidir. Gerçek kart bağlantısı değiştirilmez.</p></div>`);
 document.querySelectorAll('[data-demo-target]').forEach(button => button.addEventListener('click', () => {
@@ -195,7 +226,7 @@ document.querySelectorAll('[data-demo-target]').forEach(button => button.addEven
   document.querySelectorAll('[data-demo-target]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
 }));
 } else {
-  openProduct(pageProduct, false);
+  openProduct(pageProduct);
   emitPreviewEvent('product_view', pageProduct);
 }
 document.querySelector('#year').textContent = new Date().getFullYear();
@@ -203,8 +234,6 @@ renderCart();
 
 hydrate();
 document.addEventListener('click', e => {
-  const productButton = e.target.closest('[data-product]');
-  if (productButton) { location.href = productPath(productButton.dataset.product, homeBase); return; }
   const filter = e.target.closest('[data-filter]');
   if (filter) {
     activeFilter = filter.dataset.filter;
@@ -224,13 +253,23 @@ document.addEventListener('click', e => {
 });
 document.querySelector('.cart-trigger').addEventListener('click', () => { renderCart(); showDialog('cart-dialog'); });
 const mobileMenuButton = document.querySelector('.mobile-menu-button');
-mobileMenuButton.addEventListener('click', () => {
-  const menu = document.querySelector('#mobile-nav');
-  menu.hidden = !menu.hidden;
-  mobileMenuButton.setAttribute('aria-expanded', String(!menu.hidden));
-  mobileMenuButton.setAttribute('aria-label', menu.hidden ? 'Menüyü aç' : 'Menüyü kapat');
+const mobileNav = document.querySelector('#mobile-nav');
+function setMenuOpen(open) {
+  mobileNav.hidden = !open;
+  mobileMenuButton.setAttribute('aria-expanded', String(open));
+  mobileMenuButton.setAttribute('aria-label', open ? 'Menüyü kapat' : 'Menüyü aç');
+}
+mobileMenuButton.addEventListener('click', () => setMenuOpen(mobileNav.hidden));
+document.addEventListener('click', event => {
+  if (!mobileNav.hidden && !mobileMenuButton.contains(event.target)) setMenuOpen(false);
 });
-document.querySelectorAll('#mobile-nav a').forEach(a => a.addEventListener('click', () => { document.querySelector('#mobile-nav').hidden = true; mobileMenuButton.setAttribute('aria-expanded', 'false'); mobileMenuButton.setAttribute('aria-label', 'Menüyü aç'); }));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !mobileNav.hidden) {
+    setMenuOpen(false);
+    mobileMenuButton.focus();
+  }
+});
+matchMedia('(max-width: 820px)').addEventListener('change', () => setMenuOpen(false));
 document.querySelectorAll('dialog').forEach(dialog => {
   dialog.addEventListener('click', e => {
     if (e.target !== dialog) return;
@@ -253,5 +292,10 @@ function routeProduct() {
     if (products.some(p => p.id === id)) location.replace(productPath(id) + location.search);
   }
 }
+window.addEventListener('pageshow', event => {
+  if (!event.persisted) return;
+  try { cart = restoreCart(sessionStorage.getItem('nfc-preview-cart')); } catch { return; }
+  renderCart();
+});
 window.addEventListener('hashchange', routeProduct);
 routeProduct();

@@ -34,22 +34,34 @@ export function describeSelection(selection) {
 export function validQuantity(n) { return Number.isInteger(n) && n >= 1 && n <= 1000; }
 export function makeSelection(productId, options = {}) {
   const { connection = 'hybrid', linkType = 'static', quantity = 1, menuType = 'link', size = '10x10', material = 'clear' } = options;
-  if (!products.some(p => p.id === productId) || !connectionLabels[connection] || !linkLabels[linkType] || !validQuantity(quantity) || (productId === 'menu' && !menuLabels[menuType])) throw new Error('Ürün seçeneklerini ve 1–1000 arasındaki adedi kontrol edin.');
+  if (!products.some(p => p.id === productId) || !Object.hasOwn(connectionLabels, connection) || !Object.hasOwn(linkLabels, linkType) || !validQuantity(quantity) || (productId === 'menu' && !Object.hasOwn(menuLabels, menuType))) throw new Error('Ürün seçeneklerini ve 1–1000 arasındaki adedi kontrol edin.');
   const actualMenuType = productId === 'menu' ? menuType : null;
   const actualLinkType = connection === 'nfc' ? 'static' : linkType;
-  if (!sizeLabels[size] || !materialLabels[material]) throw new Error('Boyut ve pleksi seçimini kontrol edin.');
+  if (!Object.hasOwn(sizeLabels, size) || !Object.hasOwn(materialLabels, material)) throw new Error('Boyut ve pleksi seçimini kontrol edin.');
   return { productId, connection, linkType: actualLinkType, quantity, size, material, menuType: actualMenuType, key: [productId, size, material, connection, actualLinkType, actualMenuType || ''].join(':') };
 }
 export function restoreCart(value) {
   try {
     const records = JSON.parse(value);
     if (!Array.isArray(records) || records.length > 100) return [];
-    return records.reduce((cart, record) => record?.material === 'white' || (record?.size && record.size !== '10x10') ? cart : addToCart(cart, makeSelection(record.productId, record)), []);
+    let cart = [];
+    for (const record of records) {
+      try {
+        const selection = makeSelection(record.productId, record);
+        if (!requiresQuote(selection)) cart = addToCart(cart, selection);
+      } catch {
+        // One retired or invalid selection must not discard the remaining cards.
+      }
+    }
+    return cart;
   } catch { return []; }
 }
 export function addToCart(cart, selection) {
   const existing = cart.find(item => item.key === selection.key);
-  if (!existing) return [...cart, { ...selection }];
+  if (!existing) {
+    if (cart.length >= 30) throw new Error('Bir sepete en fazla 30 farklı kart seçimi ekleyebilirsiniz.');
+    return [...cart, { ...selection }];
+  }
   const quantity = existing.quantity + selection.quantity;
   if (!validQuantity(quantity)) throw new Error('Bir ürün seçimi için en fazla 1000 adet ekleyebilirsiniz.');
   return cart.map(item => item.key === selection.key ? { ...item, quantity } : item);

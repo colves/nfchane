@@ -13,6 +13,6 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "run_worker_first": ["/*", "!/assets/*", "!/images/*", "!/favicon.svg", "!/manrope-license.txt"],
-    "not_found_handling": "none"
+    "not_found_handling": "404-page"
   }
 }

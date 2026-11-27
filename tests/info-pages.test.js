@@ -17,6 +17,15 @@ test('information routes work at both a domain root and a repository prefix', ()
   }
 });
 
+test('each information page is linked once and the legal footer anchor starts at legal content', () => {
+  const hub = infoHtml(template);
+  const main = hub.match(/<main[^>]*>([\s\S]*?)<\/main>/)[1];
+  for (const slug of Object.keys(infoPages)) {
+    assert.equal(main.split(`href="./${slug}/"`).length - 1, 1);
+  }
+  assert.match(main, /id="yasal-bilgiler"><h2>İşletme ve yasal bilgiler/);
+});
+
 test('generated detail navigation remains inside the correct publishing prefix', () => {
   for (const prefix of ['', '/nfcshop']) {
     const url = new URL(`https://preview.example${prefix}/bilgi/teslimat-iade/`);

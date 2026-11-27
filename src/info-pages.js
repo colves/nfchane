@@ -122,7 +122,19 @@ export function infoPageFromPath(pathname) {
 }
 
 export function renderInfoContent(slug = 'index') {
-  if (slug === 'index') return `<section class="info-intro"><p class="eyebrow">YARDIM VE BİLGİLENDİRME</p><h1>Aradığınız bilgi,<br>tek bir yerde.</h1><p>Kartlar hakkında konuşalım. Teslimat ve satış koşullarının hazırlık durumunu da buradan inceleyebilirsiniz.</p></section><div class="info-list" id="yasal-bilgiler">${Object.entries(infoPages).map(([key, page]) => `<a class="info-list-link" href="./${key}/"><span><strong>${page.title}</strong><small>${page.guideProduct ? 'Kullanım rehberi' : page.legal ? 'Metin hazırlığı · Onay bekliyor' : key === 'iletisim' ? 'WhatsApp ve iletişim bilgileri' : key === 'hakkimizda' ? 'NFCHane ve kartlarımız' : 'Kargo, üretim ve iade hazırlıkları'}</small></span><span aria-hidden="true">↗</span></a>`).join('')}</div>`;
+    if (slug === 'index') {
+    const groups = [
+      { title: 'Kart kullanım rehberleri', id: 'rehberler', keys: Object.keys(infoPages).filter(key => infoPages[key].guideProduct) },
+      { title: 'Mağaza ve destek', id: 'destek', keys: ['iletisim', 'teslimat-iade', 'hakkimizda'] },
+      { title: 'İşletme ve yasal bilgiler', id: 'yasal-bilgiler', keys: Object.keys(infoPages).filter(key => infoPages[key].legal) },
+    ];
+    return `<header class="info-intro"><h1>Yardım ve bilgi</h1></header>${groups.map(group =>
+      `<section class="info-group" id="${group.id}"><h2>${group.title}</h2><div class="info-list">${group.keys.map(key => {
+        const page = infoPages[key];
+        return `<a class="info-list-link" href="./${key}/"><span><strong>${page.title}</strong><small>${page.legal ? 'Taslak · Onay bekliyor' : page.label}</small></span><span aria-hidden="true">→</span></a>`;
+      }).join('')}</div></section>`
+    ).join('')}`;
+  }
   const page = infoPages[slug];
   if (!page) throw new Error('Bilinmeyen bilgi sayfası');
   return `<nav class="info-breadcrumb" aria-label="Sayfa yolu"><a href="../">Yardım ve bilgi</a><span aria-hidden="true">/</span><span aria-current="page">${page.title}</span></nav><article class="info-article"><header class="info-intro"><p class="eyebrow">${page.legal ? 'METİN HAZIRLIĞI · ONAY BEKLİYOR' : 'YARDIM VE BİLGİLENDİRME'}</p><h1>${page.title}</h1><p class="info-lead">${page.label}</p><p>${page.intro}</p></header>${page.legal ? '<aside class="info-notice"><strong>Henüz yürürlükte olan bir metin değil.</strong><p>İşletme bilgileri ve gerekli danışman onayları tamamlandıktan sonra nihai metin yayımlanacak.</p></aside>' : ''}<div class="info-sections">${page.sections.map(([title, body]) => `<section><h2>${esc(title)}</h2><p>${esc(body)}</p></section>`).join('')}</div>${page.guideProduct ? `<a class="text-link info-contact" href="../urun/${page.guideProduct[0]}/">${page.guideProduct[1]} seçeneklerini inceleyin</a>` : ''}${slug === 'iletisim' ? '<a class="button primary info-contact" href="https://wa.me/905511956312" target="_blank" rel="noopener noreferrer">WhatsApp’ta görüşün <span aria-hidden="true">↗</span><span class="info-sr-only"> (yeni sekmede açılır)</span></a><p class="info-small">Lütfen kart bilgisi, şifre veya kimlik belgesi göndermeyin.</p>' : '<a class="text-link info-contact" href="../iletisim/">Sorunuz mu var? Bizimle görüşün <span aria-hidden="true">→</span></a>'}</article>`;

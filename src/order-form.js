@@ -6,8 +6,10 @@ import {validateOrder} from '../worker/validation.js';
 const form=document.querySelector('#order-form'),notice=document.querySelector('#order-message'),submit=document.querySelector('#order-submit');
 let requestKey=crypto.randomUUID(),canSubmit=false,cart=[],accountMode='guest';
 try{cart=restoreCart(sessionStorage.getItem('nfc-preview-cart'));}catch{}
-if(!cart.length){document.querySelector('#order-items').innerHTML='<p class="prep-small">Önce mağazadan bir kart seçip önizleme sepetine ekleyin.</p>';}
-else document.querySelector('#order-items').innerHTML=cart.map((item,index)=>{
+document.querySelector('#order-layout').hidden = !cart.length;
+document.querySelector('#order-preview-note').hidden = !cart.length;
+document.querySelector('#empty-order').hidden = Boolean(cart.length);
+if (cart.length) document.querySelector('#order-items').innerHTML=cart.map((item,index)=>{
   const p=products.find(p=>p.id===item.productId),isIban=p.id==='iban',design=p.id==='menu'&&['design-pdf','design-web'].includes(item.menuType),pdf=p.id==='menu'&&item.menuType==='pdf';
   const lockPreference=item.connection==='qr'?'':`<label class="prep-check full prep-nfc-lock"><input type="checkbox" name="lockNfc-${index}"><span><strong>NFC etiketini yazmaya kilitle</strong><small>Kilit kalıcıdır. Kartın NFC etiketi teslimden sonra yeniden yazılamaz.</small></span></label>`;
   const dynamicHint=item.linkType==='dynamic'?`<p class="prep-small full">Kart başına ${dynamicQrChangeLimit} QR adresi değişikliği dahil. <a class="text-link" href="${esc(contactUrl('Merhaba, dinamik QR adresimi değiştirmek istiyorum.'))}" target="_blank" rel="noopener noreferrer">Değişiklik için WhatsApp’tan iletişime geçin.</a></p>`:'';
@@ -52,4 +54,11 @@ async function start(){
   if(new URLSearchParams(location.search).get('misafir')!=='1'){try{const customer=await api('/api/customer/session');if(customer.authenticated){accountMode='member';form.elements.email.value=customer.user.email;}}catch{}}
   try{const session=await api('/api/session');canSubmit=session.admin&&cart.length>0;submit.disabled=!canSubmit;document.querySelector('#order-access').textContent=session.admin?'Yönetici doğrulandı. Yalnızca test kaydı oluşturabilirsiniz.':'Test kaydı için yönetim panelinden giriş yapın. Form bilgileri sunucuya gönderilmez.';}catch{document.querySelector('#order-access').textContent='Yönetim bağlantısı hazır değil. Bu form şu anda kayıt göndermez.';}
 }
-start();
+if (cart.length) start();
+window.addEventListener('pageshow', event => {
+  if (!event.persisted) return;
+  try {
+    const currentCart = restoreCart(sessionStorage.getItem('nfc-preview-cart'));
+    if (JSON.stringify(currentCart) !== JSON.stringify(cart)) location.reload();
+  } catch {}
+});
