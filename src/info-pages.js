@@ -1,4 +1,10 @@
 // Public preview information only: no customer records or unapproved contract text.
+const returnTerms = [
+  ['Sabit bağlantılı, özel baskılı kartlar', 'Bu kartları siparişte verdiğiniz bağlantı veya tasarıma göre özel olarak basarız. Bu şekilde hazırlanan kartlarda Mesafeli Sözleşmeler Yönetmeliği’nin 15/1-b maddesi uyarınca cayma hakkı istisnası uygulanır.'],
+  ['Dinamik kartlarda cayma hakkı', 'Dinamik kart için teslimden önce veya kartı sizin ya da belirlediğiniz kişinin teslim aldığı tarihten itibaren 14 gün içinde, gerekçe göstermeden ve cezai şart ödemeden cayabilirsiniz. Karma siparişlerde her karta kendi koşulu uygulanır.'],
+  ['Ayıplı ürünler', 'Her iki modelde de ayıplı mala ilişkin yasal haklarınız saklıdır. Doğru ilettiğiniz bağlantının yanlış basılması, teslimde kırık pleksi veya vaat edildiği gibi çalışmayan NFC buna örnektir. Kanundaki koşullara göre sözleşmeden dönme, bedelde indirim, ücretsiz onarım veya ayıpsız ürünle değişim talep edebilirsiniz.'],
+];
+
 export const infoPages = {
   'google-yorum-karti-nasil-kullanilir': {
     title: 'Google yorum kartı nasıl kullanılır?',
@@ -62,8 +68,7 @@ export const infoPages = {
       ['Gönderim kapsamı', 'Başlangıçta yalnızca Türkiye’ye gönderim planlanıyor. Gönderiler Sakarya veya Kütahya’dan çıkabilir.'],
       ['Kargo ücreti ve teslim süresi', 'Kargo firması, ücret ve hazırlık süresi henüz belirlenmedi. Bu bilgiler satış başlamadan önce açıklanacak; kargo bedeli ödeme öncesinde gösterilecek. Şu an ücretsiz kargo veya belirli bir teslim günü taahhüdü yok.'],
       ['Size özel tasarım', 'Kişiselleştirme gerektiren ürünlerde son tasarımın üretimden önce onayınıza sunulması planlanıyor. Tasarım hazırlığı ile kargo süresi ayrı ayrı belirtilecek.'],
-      ['Cayma ve kişiye özel baskı', 'Tüketici siparişlerinde cayma koşulları kartın üretim biçimine göre belirlenecek. Müşteriye özgü kalıcı QR, logo, isim veya tasarım baskısı ile özel kalıcı baskısı olmayan kartlar ayrı değerlendirilecek.'],
-      ['İptal, iade ve hasarlı ürün', 'Ayıplı, yanlış, hasarlı veya çalışmayan ürünlerde tüketicinin yasal hakları saklıdır. Başvuru kanalı ve taşıyıcı bilgisi satış koşulları onaylandığında burada paylaşılacak.'],
+      ...returnTerms,
     ],
   },
   gizlilik: {
@@ -94,12 +99,15 @@ export const infoPages = {
     ],
   },
   'mesafeli-satis': {
-    title: 'Mesafeli satış sözleşmesi', label: 'Satış koşulları hazırlanıyor.', legal: true,
+    title: 'Mesafeli satış sözleşmesi', label: 'NFC ve QR kartları için tüketici satış koşulları.', legal: true,
     intro: 'Satıcı bilgileri ve satış süreçleri kesinleşmeden sözleşme tamamlanmış gibi sunulmuyor. Mevcut önizlemede sözleşme kabulü veya satış yapılmaz.',
     sections: [
-      ['İşletme bilgileri', 'Satıcının unvanı, adresi ve iletişim bilgileri doğrulanacak.'],
-      ['Siparişe özel bilgiler', 'Ürün ve kişiselleştirme bilgileri, adet, toplam bedel, vergiler, kargo ücreti, ödeme ve teslimat bilgileri gerçek siparişten alınacak.'],
-      ['Onay bekleyen koşullar', 'Cayma, iptal, iade, kişiye özel ürünler ve uyuşmazlık süreçleri hukuk danışmanı tarafından değerlendirilecek. Onaylanan metnin sürümü siparişle birlikte saklanacak.'],
+      ['Taraflar ve kapsam', 'Bu koşullar, NFCHane mağazasından tüketici olarak satın aldığınız kartların hazırlanmasını ve teslimini kapsar. NFCHane mağazanın markasıdır. Satıcının resmî unvanı, adresi ve iletişim bilgileri satış açılmadan önce yayımlanacaktır.'],
+      ['Ürün, bedel ve ödeme', 'Okutma yöntemi, bağlantı türü, adet ve kişiselleştirme bilgileri sipariş özetinde belirtilir. Vergiler dâhil ürün bedelini, kargo ücretini ve ödenecek toplamı siparişi onaylamadan önce görürsünüz.'],
+      ['Hazırlık ve teslimat', 'Satıcı kartları siparişinizdeki özelliklere göre hazırlar ve bildirilen süre içinde belirttiğiniz adrese teslim eder. Hazırlık ve teslim süreleri satış başladığında ön bilgilendirme formunda yer alır.'],
+      ...returnTerms,
+      ['Cayma bildirimi ve geri ödeme', 'Cayma kararınızı süre içinde satıcıya yazılı olarak veya e-posta gibi saklanabilir bir yolla bildirebilirsiniz. Sipariş numaranızı ve hangi kartı iade ettiğinizi belirtmeniz işlemi kolaylaştırır. İade adresi ve taşıyıcı sipariş öncesinde bildirilecektir. Satıcı, cayma kapsamındaki ödemeleri yasal süresinde, kullandığınız ödeme aracına uygun şekilde ve ek ücret almadan iade eder.'],
+      ['Uyuşmazlık başvuruları', 'Uyuşmazlık hâlinde, geçerli parasal sınıra göre yerleşim yerinizdeki veya işlemin yapıldığı yerdeki tüketici hakem heyetine ya da ilgili dava şartları çerçevesinde tüketici mahkemesine başvurabilirsiniz.'],
     ],
   },
   'on-bilgilendirme': {
@@ -108,7 +116,7 @@ export const infoPages = {
     sections: [
       ['Ürün ve bedel', 'Ürünün temel özellikleri, seçilen seçenekler, adet ve vergiler dahil bedel sipariş verilerinden gösterilecek.'],
       ['Teslimat ve diğer giderler', 'Kargo bedeli, varsa diğer giderler, ödeme yöntemi ve teslimata ilişkin bilgiler ödeme tamamlanmadan önce açıklanacak.'],
-      ['Satıştan önce onaylanacak', 'Satıcı bilgileri, cayma ve iade koşulları dahil nihai içerik işletme ve hukuk danışmanı onayından sonra kullanılacak.'],
+      ...returnTerms,
     ],
   },
 };
